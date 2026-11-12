@@ -32,10 +32,10 @@ class Shoukaku extends Kazagumo{
             resumeByLibrary       : true,
             resumeTimeout         : 60,
             reconnectTries        : Infinity,
-            reconnectInterval     : 5000,
-            restTimeout           : 15000,
+            reconnectInterval     : 5,
+            restTimeout           : 15,
             moveOnDisconnect      : true,
-            voiceConnectionTimeout: 15000,
+            voiceConnectionTimeout: 15,
         }
         )
     }
