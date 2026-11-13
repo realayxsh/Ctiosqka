@@ -3,7 +3,7 @@ name: MongoDB configuration preference
 description: Where the user wants this bot's MongoDB configuration to remain.
 ---
 
-The user wants MongoDB connection settings kept in `config.json`, not moved into Secrets.
+The user wants MongoDB connection settings kept in `config.json`, not moved into Secrets. They explicitly approved config-only MongoDB resolution, ignoring MongoDB environment-variable overrides.
 
 **Why:** The user explicitly asked: “i dont want to put mongo in secret let it be on config.”
 

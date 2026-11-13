@@ -28,17 +28,17 @@ class Avon extends Client {
         this.on('shardResume', shardId => wh.info('Discord connection resumed', `Shard ${shardId} resumed.`));
         this.on('shardDisconnect', (event, shardId) =>
             wh.info('Discord disconnected', `Shard ${shardId} disconnected. Code: ${event.code}`, 0xFF8800));
-        this.data = new Database(process.env.mongourl || config.mongourl, { writeConcern: { w: 'majority' } });
+        this.data = new Database(config.mongourl, { writeConcern: { w: 'majority' } });
         this.data.connect();
-        this.data2 = new Database(process.env.mongourl2 || config.mongourl2, { writeConcern: { w: 'majority' } });
+        this.data2 = new Database(config.mongourl2, { writeConcern: { w: 'majority' } });
         this.data2.connect();
-        this.data3 = new Database(process.env.mongourl3 || process.env.mongourl || config.mongourl, { writeConcern: { w: 'majority' } });
+        this.data3 = new Database(config.mongourl3 || config.mongourl, { writeConcern: { w: 'majority' } });
         this.data3.connect();
-        this.data4 = new Database(process.env.mongourl4 || process.env.mongourl || config.mongourl, { writeConcern: { w: 'majority' } });
+        this.data4 = new Database(config.mongourl4 || config.mongourl, { writeConcern: { w: 'majority' } });
         this.data4.connect();
-        this.data5 = new Database(process.env.mongourl5 || config.mongourl5 || process.env.mongourl || config.mongourl, { writeConcern: { w: 'majority' } });
+        this.data5 = new Database(config.mongourl5 || config.mongourl, { writeConcern: { w: 'majority' } });
         this.data5.connect();
-        this.data6 = new Database(process.env.mongourl6 || config.mongourl6 || process.env.mongourl || config.mongourl, { writeConcern: { w: 'majority' } });
+        this.data6 = new Database(config.mongourl6 || config.mongourl, { writeConcern: { w: 'majority' } });
         this.data6.connect();
         this.poru = new Shoukaku(this);
         this.lavasfy = new Lavasfy(this);
