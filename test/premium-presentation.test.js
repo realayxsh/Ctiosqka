@@ -111,8 +111,7 @@ test('help highlights Premium and keeps filter details in their own category', a
     await new Help(f.client).run(f.client, f.message, [], '+');
     const home = f.sent[0].components[0].toJSON();
     assert.match(JSON.stringify(home), /Radio Premium/);
-    assert.match(JSON.stringify(home), /Two ways to use commands/);
-    assert.match(JSON.stringify(home), /Prefix:\*\* `\+`/);
+    assert.doesNotMatch(JSON.stringify(home), /Two ways|Use prefix/);
     assert.match(JSON.stringify(home), /`play`/);
     assert.doesNotMatch(JSON.stringify(home), /\/filter/);
     assert.doesNotMatch(JSON.stringify(home), /8D|Bass Boost/);
@@ -156,22 +155,23 @@ test('help lists every filter in All Commands and the Filters category without p
     }
 });
 
-test('every help page shows both invocation methods and unprefixed command names', async () => {
+test('help sections show a short usage note while the home menu stays uncluttered', async () => {
     const f = fixture();
     await new Help(f.client).run(f.client, f.message, [], '!');
-    const check = payload => {
+    const check = (payload, isHome = false) => {
         const copy = serialize(payload);
-        assert.match(copy, /Prefix:\*\* `!`/);
-        assert.match(copy, /Slash:\*\* `\/`/);
+        if (isHome) assert.doesNotMatch(copy, /Use prefix/);
+        else assert(copy.includes('Use prefix `!` or slash `/`.'));
+        assert.doesNotMatch(copy, /Two ways to use commands|Type the prefix before/);
         assert.doesNotMatch(copy, /`[\/!+][a-z0-9]/i);
         assert.equal(payload.components.length, 3);
         assert.equal(payload.components[1].toJSON().components.length, 5);
     };
-    check(f.sent[0]);
+    check(f.sent[0], true);
     for (const value of ['ok1', 'ok2', 'ok3', 'ok4', 'ok5', 'ok6', 'ok7']) {
         let payload;
         await f.events.collect({ isButton: () => false, isStringSelectMenu: () => true,
             values: [value], update: async data => { payload = data; } });
-        check(payload);
+        check(payload, value === 'ok1');
     }
 });

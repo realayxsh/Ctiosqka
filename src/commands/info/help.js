@@ -8,9 +8,7 @@ class Help extends AvonCommand{
     async run(client, message, args, prefix){
         const textPrefix = prefix || client.config.prefix;
         const commandName = command => command.name;
-        const usageNote = `**Two ways to use commands**\n` +
-            `**Prefix:** \`${textPrefix}\`  •  **Slash:** \`/\`\n` +
-            `Type the prefix before a command name, or use Discord's slash command menu.`;
+        const usageNote = `Use prefix \`${textPrefix}\` or slash \`/\`.`;
         try{
             let musicCmds  = client.AvonCommands.commands.filter(x => x.cat && x.cat === `music`);
             let filterCmds = client.AvonCommands.commands.filter(x => x.cat && x.cat === `filters`);
@@ -42,7 +40,6 @@ class Help extends AvonCommand{
                         .addTextDisplayComponents(new TextDisplayBuilder().setContent(
                             `**${client.user.username} HelpDesk**\n\n` +
                             `Hey ${message.author} I am **${client.user.username}**\n\n` +
-                            `${usageNote}\n\n` +
                             `${client.emoji.arrow} Start listening with \`play\`.\n\n` +
                             `${client.emoji.premium} **Radio Premium** — custom server branding and premium audio presets.\n` +
                             `Explore \`premium\`, or select **Premium** below.\n\n` +
