@@ -1,5 +1,5 @@
 const { Kazagumo, Plugins } = require("kazagumo");
-const Spotify = require(`kazagumo-spotify`);
+const Spotify = require('../audio/spotify');
 const Deezer = require(`kazagumo-deezer`);
 const config = require(`../../config.json`);
 const { Connectors } = require(`shoukaku`);
@@ -17,8 +17,7 @@ class Shoukaku extends Kazagumo{
                     playlistPageLimit : 5,
                     albumPageLimit : 5,
                     searchLimit : 50,
-                    searchMarket : "IN",
-                    searchPlatform : "scsearch"
+                    searchMarket : "IN"
                 }),
                 new Deezer({
                     playlistLimit : 20

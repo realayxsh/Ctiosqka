@@ -1,6 +1,8 @@
 const { ContainerBuilder, TextDisplayBuilder, SectionBuilder, ThumbnailBuilder, SeparatorBuilder, ActionRowBuilder, ButtonBuilder, ButtonStyle, MessageFlags } = require("discord.js");
 const ms = require("ms");
 const AvonCommand = require(`../../structures/avonCommand`);
+const { musicLinkSource } = require('../../audio/spotify');
+const wh = require('../../structures/webhook');
 
 class Play extends AvonCommand {
     get name() { return 'play' }
@@ -37,15 +39,7 @@ class Play extends AvonCommand {
                 return send(`**${client.emoji.info} | Command Usage**\n\`\`\`js\n${prefix}play <songurl>\`\`\``);
             }
 
-            let query = args.join(" ");
-
-            // Resolve spotify.link short URLs to the full open.spotify.com URL
-            if (query.startsWith('https://spotify.link/')) {
-                try {
-                    const res = await fetch(query, { method: 'HEAD', redirect: 'follow' });
-                    if (res.url && res.url.includes('open.spotify.com')) query = res.url;
-                } catch(e) { /* keep original if fetch fails */ }
-            }
+            const query = args.join(" ").trim().replace(/^<(.+)>$/, '$1');
 
             const searchingContainer = new ContainerBuilder()
                 .addSectionComponents(
@@ -70,15 +64,16 @@ class Play extends AvonCommand {
 
             player.setTextChannel(message.channel.id);
 
-            if (query.startsWith('https://')) {
-                if (!/(spotify|deezer|soundcloud)\./i.test(query)) {
+            if (/^(https?:\/\/|spotify:)/i.test(query)) {
+                const source = musicLinkSource(query);
+                if (!source) {
                     return editMsg(searchingMsg, `**${client.emoji.cross} | Only Spotify, Deezer, and SoundCloud links are supported.**`);
                 }
 
                 try {
                     let result = await player.search(query, { requester: message.author });
                     if (!result || !result.tracks.length) {
-                        return editMsg(searchingMsg, `**${client.emoji.cross} | No results found for that Spotify link. Make sure it is valid and public.**`);
+                        return editMsg(searchingMsg, `**${client.emoji.cross} | Could not load this ${source} link**\n\nNo playable tracks were returned. Check that it is public and accessible, or try another link.`);
                     }
                     if (result.type === `PLAYLIST`) {
                         for (let track of result.tracks) player.queue.add(track);
@@ -90,8 +85,9 @@ class Play extends AvonCommand {
                         return editMsg(searchingMsg, `**${client.emoji.queue} | Added Song to Queue**\n\n${client.emoji.queue} **Added** [${result.tracks[0].title}](${result.tracks[0].uri || client.config.server})\n${client.emoji.users} **Requester:** ${message.author}\n${client.emoji.time} **Duration:** ${ms(result.tracks[0].length)}`);
                     }
                 } catch (e) {
-                    console.error('[Play Spotify URL]', e);
-                    return editMsg(searchingMsg, `**${client.emoji.cross} | Failed to load that Spotify link. Make sure it is valid and public.**`);
+                    wh.error(`${source} link loading failed`, e);
+                    console.warn(`[Play] ${source} link loading failed`);
+                    return editMsg(searchingMsg, `**${client.emoji.cross} | Could not load this ${source} link**\n\nThe music provider couldn't load its tracks right now. The link may be private or unavailable, or the provider may be having an issue. Please try again shortly.`);
                 }
             }
 
