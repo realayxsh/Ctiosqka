@@ -89,6 +89,8 @@ test('prefix commands deny free servers including owners and allow premium witho
             await f.handler.run(f.message);
             assert.equal(ran, false, `${command.name} allowed on a free server`);
             assert.match(text(f.calls), /Premium Required/);
+            assert.ok(text(f.calls).includes('**__Premium Required__**'));
+            assert.ok(text(f.calls).includes('**/redeem**'));
             f.entitlement = { active: true, expiresAt: null };
             await f.handler.run(f.message);
             assert.equal(ran, true, `${command.name} blocked on a premium server`);
@@ -111,6 +113,8 @@ test('slash premium commands cannot be unlocked by owners or votes', async () =>
             await executeSlash(f.client, f.interaction, access);
             assert.equal(ran, false);
             assert.match(text(f.calls), /requires Premium/);
+            assert.ok(text(f.calls).includes('**__Premium Required__**'));
+            assert.ok(text(f.calls).includes('**/redeem**'));
             f.entitlement = { active: true, expiresAt: null };
             await executeSlash(f.client, f.interaction, access);
             assert.equal(ran, true);
@@ -135,6 +139,8 @@ test('slash filters and both dropdowns enforce premium for all effects and clear
                 f.interaction.values = [value];
                 await new Interactions(f.client).run(f.interaction);
                 assert.match(text(f.calls.slice(-1)), /Premium Required/);
+                assert.ok(text(f.calls.slice(-1)).includes('**__Premium Required__**'));
+                assert.ok(text(f.calls.slice(-1)).includes('**/redeem**'));
             }
         }
         assert.equal(f.updates.length, 0);

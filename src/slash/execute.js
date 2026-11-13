@@ -70,7 +70,12 @@ async function executeSlash(client, interaction, access) {
         const player = client.poru.players.get(interaction.guild.id);
         if (name === 'filter') {
             if (!await access.isPremium(client, interaction.guild.id)) {
-                return interaction.editReply(response(`${client.emoji.premium} | This filter requires Premium for this server. Use /redeem to activate it.`));
+                return interaction.editReply(response(
+                    `${client.emoji.premium} | **__Premium Required__**\n\n` +
+                    `This filter requires Premium for this server.\n` +
+                    `Activate your premium code with **/redeem** to unlock it.\n\n` +
+                    `Check your server's status with **/premium**.`
+                ));
             }
             const chosen = originalName === 'filters' ? interaction.options.getString('filter') : interaction.options.getString('effect');
             if (!chosen) {
@@ -118,7 +123,12 @@ async function executeSlash(client, interaction, access) {
             command.premium ? access.isPremium(client, interaction.guild.id) : true,
         ]);
         if (!voted) return interaction.editReply(response(`${client.emoji.tick} | Vote required: https://top.gg/bot/${client.user.id}/vote`));
-        if (!premium) return interaction.editReply(response(`${client.emoji.premium} | This command requires Premium. Use /redeem to activate it.`));
+        if (!premium) return interaction.editReply(response(
+            `${client.emoji.premium} | **__Premium Required__**\n\n` +
+            `This command requires Premium for this server.\n` +
+            `Activate your premium code with **/redeem** to unlock it.\n\n` +
+            `Check your server's status with **/premium**.`
+        ));
         const prefix = await client.data.get(`${interaction.guild.id}-prefix`) || client.config.prefix;
         const message = makeMessage(client, interaction, args, name, member);
         await command.run(client, message, args, prefix, player);

@@ -211,10 +211,10 @@ class AvonCommands extends EventEmitter {
                         .addSectionComponents(
                             new SectionBuilder()
                                 .addTextDisplayComponents(new TextDisplayBuilder().setContent(
-                                    `**${client.emoji.premium} | Premium Required**\n\n` +
+                                    `${client.emoji.premium} | **__Premium Required__**\n\n` +
                                     `${client.emoji.cross} | This command is **Premium Only!**\n\n` +
-                                    `Get a premium code from the bot owner and use \`${prefix}redeem <code>\` to activate Premium for this server.\n\n` +
-                                    `Check your status with \`${prefix}premium\``
+                                    `Get a premium code from the bot owner and activate it with **/redeem** or **\`${prefix}redeem <code>\`**.\n\n` +
+                                    `Check your status with **/premium** or **\`${prefix}premium\`**.`
                                 ))
                                 .setThumbnailAccessory(new ThumbnailBuilder().setURL(message.author.displayAvatarURL({ dynamic: true })))
                         )

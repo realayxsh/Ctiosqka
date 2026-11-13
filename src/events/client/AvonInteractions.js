@@ -192,7 +192,10 @@ class AvonInteractions extends AvonClientEvents{
 
                 if(!await isPremium(this.client, interaction.guild.id)){
                     return interaction.editReply(cv2(
-                        `${this.client.emoji.premium} | Premium Required — activate Premium for this server with /redeem to use filters.`
+                        `${this.client.emoji.premium} | **__Premium Required__**\n\n` +
+                        `This filter requires Premium for this server.\n` +
+                        `Activate your premium code with **/redeem** to unlock it.\n\n` +
+                        `Check your server's status with **/premium**.`
                     ));
                 }
 
