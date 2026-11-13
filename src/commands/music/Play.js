@@ -1,6 +1,5 @@
 const { ContainerBuilder, TextDisplayBuilder, SectionBuilder, ThumbnailBuilder, SeparatorBuilder, ActionRowBuilder, ButtonBuilder, ButtonStyle, MessageFlags } = require("discord.js");
 const ms = require("ms");
-const { KazagumoTrack } = require(`kazagumo`);
 const AvonCommand = require(`../../structures/avonCommand`);
 
 class Play extends AvonCommand {
@@ -72,46 +71,27 @@ class Play extends AvonCommand {
             player.setTextChannel(message.channel.id);
 
             if (query.startsWith('https://')) {
-                if (query.includes(`youtube`) || query.includes(`youtu.be`)) {
-                    return editMsg(searchingMsg, `**| I don't resolve YouTube links anymore due to YouTube's TOS**`);
+                if (!/(spotify|deezer|soundcloud)\./i.test(query)) {
+                    return editMsg(searchingMsg, `**| ${client.emoji.cross} | Only Spotify, Deezer, and SoundCloud links are supported.**`);
                 }
 
-                if (query.includes(`spotify`)) {
-                    try {
-                        let result = await player.search(query, { requester: message.author });
-                        if (!result || !result.tracks.length) {
-                            return editMsg(searchingMsg, `**| ${client.emoji.cross} | No results found for that Spotify link**`);
-                        }
-                        if (result.type === `PLAYLIST`) {
-                            for (let track of result.tracks) player.queue.add(track);
-                            if (!player.playing && !player.paused) player.play();
-                            return editMsg(searchingMsg, `**| Added Playlist to Queue**\n\n${client.emoji.queue} **Added** \`${result.tracks.length}\` songs from *${result.playlistName}*\n${client.emoji.users} **Requester:** ${message.author}\n${client.emoji.time} **Duration:** \`${ms(result.tracks.reduce((a, v) => a + (v.length || 0), 0))}\``);
-                        } else {
-                            player.queue.add(result.tracks[0]);
-                            if (!player.playing && !player.paused) player.play();
-                            return editMsg(searchingMsg, `**| Added Song to Queue**\n\n${client.emoji.queue} **Added** [${result.tracks[0].title}](${result.tracks[0].uri || client.config.server})\n${client.emoji.users} **Requester:** ${message.author}\n${client.emoji.time} **Duration:** ${ms(result.tracks[0].length)}`);
-                        }
-                    } catch (e) {
-                        console.error('[Play Spotify]', e);
-                        return editMsg(searchingMsg, `**| ${client.emoji.cross} | Failed to load that Spotify link. Make sure the link is valid and public.**`);
+                try {
+                    let result = await player.search(query, { requester: message.author });
+                    if (!result || !result.tracks.length) {
+                        return editMsg(searchingMsg, `**| ${client.emoji.cross} | No results found for that Spotify link. Make sure it is valid and public.**`);
                     }
-                } else {
-                    try {
-                        let result = await player.search(query, { requester: message.author });
-                        if (!result || !result.tracks.length) return editMsg(searchingMsg, `**| No results were found**`);
-                        if (result.type === `PLAYLIST`) {
-                            for (let track of result.tracks) player.queue.add(track);
-                            if (!player.playing && !player.paused) player.play();
-                            return editMsg(searchingMsg, `**| Added Playlist to Queue**\n\n${client.emoji.queue} **Added** \`${result.tracks.length}\` songs from *${result.playlistName}*\n${client.emoji.users} **Requester:** ${message.author}\n${client.emoji.time} **Duration:** \`${ms(result.playlistInfo?.length ?? 0)}\``);
-                        } else {
-                            player.queue.add(result.tracks[0]);
-                            if (!player.playing && !player.paused) player.play();
-                            return editMsg(searchingMsg, `**| Added Song to Queue**\n\n${client.emoji.queue} **Added** [${result.tracks[0].title}](${result.tracks[0].uri || client.config.server})\n${client.emoji.users} **Requester:** ${message.author}\n${client.emoji.time} **Duration:** ${ms(result.tracks[0].length)}`);
-                        }
-                    } catch (e) {
-                        console.error('[Play URL]', e);
-                        return editMsg(searchingMsg, `**| ${client.emoji.cross} | Failed to load that link**`);
+                    if (result.type === `PLAYLIST`) {
+                        for (let track of result.tracks) player.queue.add(track);
+                        if (!player.playing && !player.paused) await player.play();
+                        return editMsg(searchingMsg, `**| Added Playlist to Queue**\n\n${client.emoji.queue} **Added** \`${result.tracks.length}\` songs from *${result.playlistName}*\n${client.emoji.users} **Requester:** ${message.author}\n${client.emoji.time} **Duration:** \`${ms(result.tracks.reduce((a, v) => a + (v.length || 0), 0))}\``);
+                    } else {
+                        player.queue.add(result.tracks[0]);
+                        if (!player.playing && !player.paused) await player.play();
+                        return editMsg(searchingMsg, `**| Added Song to Queue**\n\n${client.emoji.queue} **Added** [${result.tracks[0].title}](${result.tracks[0].uri || client.config.server})\n${client.emoji.users} **Requester:** ${message.author}\n${client.emoji.time} **Duration:** ${ms(result.tracks[0].length)}`);
                     }
+                } catch (e) {
+                    console.error('[Play Spotify URL]', e);
+                    return editMsg(searchingMsg, `**| ${client.emoji.cross} | Failed to load that Spotify link. Make sure it is valid and public.**`);
                 }
             }
 
@@ -133,74 +113,60 @@ class Play extends AvonCommand {
                     )
                 );
 
-            await searchingMsg.delete().catch(() => {});
-            let msg = await message.channel.send({ flags: [MessageFlags.IsComponentsV2], components: [selectorContainer] });
-
-            let co = msg.createMessageComponentCollector({
-                filter: (b) => {
-                    if (b.user.id === message.author.id) return true;
-                    b.reply({ content: `${client.emoji.cross} | You are not the author of this command`, ephemeral: true }).catch(() => {});
-                    return false;
-                },
+            await searchingMsg.edit({ flags: [MessageFlags.IsComponentsV2], components: [selectorContainer] });
+            const collector = searchingMsg.createMessageComponentCollector({
+                filter: interaction => interaction.user.id === message.author.id,
                 time: 120000,
                 max: 1
             });
 
-            co.on('collect', async (interaction) => {
-                if (!interaction.isButton()) return;
-                if (interaction.user.id !== message.author.id) return interaction.deferUpdate().catch(() => {});
-
-                await interaction.deferUpdate().catch(() => {});
+            collector.on('collect', async interaction => {
+                await interaction.deferUpdate();
 
                 try {
-                    let p = client.poru.players.get(message.guild.id);
-                    if (!p) {
-                        return editMsg(msg, `**| ${client.emoji.cross} | Player no longer exists. Please run the command again.**`);
+                    const player = client.poru.players.get(message.guild.id);
+                    if (!player) {
+                        return editMsg(searchingMsg, `**| ${client.emoji.cross} | Player no longer exists. Please run the command again.**`);
                     }
 
-                    let result;
-                    if (interaction.customId === 'spoti') {
-                        result = await p.search(query, { engine: 'spotify', requester: message.author });
-                    } else if (interaction.customId === 'deez') {
-                        result = await p.search(query, { engine: 'deezer', requester: message.author });
-                    } else if (interaction.customId === 'sc') {
-                        result = await p.search(query, { engine: 'soundcloud', requester: message.author });
-                    } else {
-                        result = await p.search(query, { requester: message.author });
+                    const engines = {
+                        def: { label: 'Default' },
+                        spoti: { engine: 'spotify', label: 'Spotify' },
+                        deez: { engine: 'deezer', label: 'Deezer' },
+                        sc: { engine: 'soundcloud', label: 'SoundCloud' }
+                    };
+                    const selectedEngine = engines[interaction.customId];
+                    if (!selectedEngine) {
+                        return editMsg(searchingMsg, `**| ${client.emoji.cross} | Unknown search engine. Please run the command again.**`);
                     }
+                    const result = await player.search(query, {
+                        ...(selectedEngine.engine ? { engine: selectedEngine.engine } : {}),
+                        requester: message.author
+                    });
 
-                    if (!result || !result.tracks.length) {
-                        return editMsg(msg, `**| No results were found for \`${query}\`**`);
+                    if (!result?.tracks?.length) {
+                        return editMsg(searchingMsg, `**| ${client.emoji.cross} | No results found for \`${query}\` using ${selectedEngine.label}.**`);
                     }
 
                     if (result.type === `PLAYLIST`) {
-                        for (let track of result.tracks) {
-                            let tr = interaction.customId === 'spoti'
-                                ? new KazagumoTrack(track.getRaw(), message.author)
-                                : track;
-                            p.queue.add(tr);
-                        }
-                        if (!p.playing && !p.paused) p.play();
-                        return editMsg(msg, `**| Added Playlist to Queue**\n\n${client.emoji.queue} **Added** \`${result.tracks.length}\` songs from *${result.playlistName}*\n${client.emoji.users} **Requester:** ${message.author}\n${client.emoji.time} **Duration:** \`${ms(result.playlistInfo?.length ?? 0)}\``);
-                    } else {
-                        let track = interaction.customId === 'spoti'
-                            ? new KazagumoTrack(result.tracks[0].getRaw(), message.author)
-                            : result.tracks[0];
-                        p.queue.add(track);
-                        if (!p.playing && !p.paused) p.play();
-                        return editMsg(msg, `**| Added Song to Queue**\n\n${client.emoji.queue} **Added** [${result.tracks[0].title}](${result.tracks[0].uri || client.config.server})\n${client.emoji.users} **Requester:** ${message.author}\n${client.emoji.time} **Duration:** ${ms(result.tracks[0].length)}`);
+                        for (const track of result.tracks) player.queue.add(track);
+                        if (!player.playing && !player.paused) await player.play();
+                        return editMsg(searchingMsg, `**| Added Playlist to Queue**\n\n${client.emoji.queue} **Added** \`${result.tracks.length}\` songs from *${result.playlistName}*\n${client.emoji.users} **Requester:** ${message.author}\n${client.emoji.time} **Duration:** \`${ms(result.tracks.reduce((total, track) => total + (track.length || 0), 0))}\``);
                     }
-                } catch (e) {
-                    console.error('[Play Collector]', e);
-                    editMsg(msg, `**| ${client.emoji.cross} | Something went wrong while searching. Please try again.**`).catch(() => {});
+
+                    const track = result.tracks[0];
+                    player.queue.add(track);
+                    if (!player.playing && !player.paused) await player.play();
+                    return editMsg(searchingMsg, `**| Added Song to Queue**\n\n${client.emoji.queue} **Added** [${track.title}](${track.uri || client.config.server})\n${client.emoji.users} **Requester:** ${message.author}\n${client.emoji.time} **Duration:** ${ms(track.length || 0)}`);
+                } catch (error) {
+                    console.error('[Play Search]', error);
+                    return editMsg(searchingMsg, `**| ${client.emoji.cross} | Search failed for that engine. Please try another engine or query.**`).catch(() => {});
                 }
             });
 
-            co.on('end', (collected) => {
-                if (collected.size === 0) {
-                    msg.delete().catch(() => {
-                        editMsg(msg, `**| ${client.emoji.cross} | Search timed out. Run the command again.**`).catch(() => {});
-                    });
+            collector.on('end', (collected, reason) => {
+                if (collected.size === 0 && reason === 'time') {
+                    editMsg(searchingMsg, `**| ${client.emoji.cross} | Search selection timed out. Run the command again.**`).catch(() => {});
                 }
             });
 
