@@ -26,7 +26,7 @@ class DisableChannel extends AvonCommand{
         let current = await client.data.get(key);
 
         if (this.name === 'enablechannel') {
-            if (current !== 'disabled') return send(`${client.emoji.tick} | Bot commands are already **enabled** in ${target}`);
+            if (current !== 'disabled') return send(`${client.emoji.warning} | Bot commands are already **enabled** in ${target}`);
             await client.data.delete(key);
             return send(`${client.emoji.tick} | **Enabled** bot commands in ${target}`);
         }

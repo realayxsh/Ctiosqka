@@ -181,6 +181,8 @@ test('/enablechannel restores commands and never disables an already enabled cha
     await executeSlash(client, interaction, access);
     assert.equal(client.data.map.has('disabled_channel_guild_channel'), false);
     assert.match(texts(calls), /already/);
+    const latest = calls.filter(([type]) => type === 'edit').at(-1)[1];
+    assert.ok(JSON.stringify(latest).includes(`${emoji.warning} | Bot commands are already`));
     const schema = createDefinitions().find(command => command.name === 'enablechannel');
     assert.equal(schema.options[0].name, 'channel');
     assert.equal(schema.options[0].required, false);
