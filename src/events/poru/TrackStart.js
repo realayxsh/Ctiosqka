@@ -7,6 +7,7 @@ const { applyFilter } = require('../../audio/filters');
 const wh = require('../../structures/webhook');
 const { buildPlaybackRows } = require('../../structures/playbackControls');
 const { isPremium } = require('../../structures/premiumAccess');
+const { updateVoiceStatus } = require('../../structures/voiceStatus');
 
 class TrackStart extends AvonClientEvent {
     get name() { return 'playerStart' }
@@ -23,6 +24,8 @@ class TrackStart extends AvonClientEvent {
                 );
             return channel?.send({ flags: [MessageFlags.IsComponentsV2], components: [skipContainer] });
         }
+
+        await updateVoiceStatus(this.client, player, track);
 
         try {
             const active = player.data.get('activeFilter');

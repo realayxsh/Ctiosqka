@@ -2,6 +2,7 @@ const { PermissionsBitField, ContainerBuilder, TextDisplayBuilder, MessageFlags 
 const AvonClientEvent = require("../../structures/Eventhandler");
 const wh = require('../../structures/webhook');
 const { isPremium } = require('../../structures/premiumAccess');
+const { clearVoiceStatus } = require('../../structures/voiceStatus');
 
 const recreateCooldown = new Map();
 const COOLDOWN_MS = 15000;
@@ -10,6 +11,7 @@ class PlayerDestroy extends AvonClientEvent{
     get name(){ return 'playerDestroy' }
     async run(player){
         wh.music('Player destroyed', player);
+        await clearVoiceStatus(this.client, player);
         try{ player.data.get('music').delete() } catch(e) { }
         let guild = this.client.guilds.cache.get(player.guildId);
         if(!guild) return;

@@ -1,6 +1,7 @@
 const delay = require(`delay`);
 const AvonClientEvent = require("../../structures/Eventhandler");
 const { isPremium } = require('../../structures/premiumAccess');
+const { updateVoiceStatus, clearVoiceStatus } = require('../../structures/voiceStatus');
 
 class AvonVoiceStateUpdate extends AvonClientEvent {
     get name() { return 'voiceStateUpdate'; }
@@ -17,6 +18,7 @@ class AvonVoiceStateUpdate extends AvonClientEvent {
         if (os.id === this.client.user.id) {
             // Bot was disconnected from VC
             if (!ns.channelId) {
+                if (player) await clearVoiceStatus(this.client, player);
                 if (player) player.destroy().catch(() => {});
                 return;
             }
@@ -24,6 +26,7 @@ class AvonVoiceStateUpdate extends AvonClientEvent {
             // Bot moved to a different channel — update player voiceId
             if (player && ns.channelId && ns.channelId !== os.channelId) {
                 player.voiceId = ns.channelId;
+                if (player.queue.current) await updateVoiceStatus(this.client, player, player.queue.current);
                 // The Lavalink player retains its selected filters across voice moves.
                 // Do not replace them with a separate quality EQ.
             }
