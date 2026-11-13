@@ -194,7 +194,7 @@ class AvonInteractions extends AvonClientEvents{
                     return interaction.editReply(cv2(
                         `${this.client.emoji.premium} | **__Premium Required__**\n\n` +
                         `This filter requires Premium for this server.\n` +
-                        `Activate your premium code with **/redeem** to unlock it.\n\n` +
+                        `Activate your premium code with:\n**/redeem**\n\n` +
                         `Check your server's status with **/premium**.`
                     ));
                 }

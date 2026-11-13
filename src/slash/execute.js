@@ -73,7 +73,7 @@ async function executeSlash(client, interaction, access) {
                 return interaction.editReply(response(
                     `${client.emoji.premium} | **__Premium Required__**\n\n` +
                     `This filter requires Premium for this server.\n` +
-                    `Activate your premium code with **/redeem** to unlock it.\n\n` +
+                    `Activate your premium code with:\n**/redeem**\n\n` +
                     `Check your server's status with **/premium**.`
                 ));
             }
@@ -126,7 +126,7 @@ async function executeSlash(client, interaction, access) {
         if (!premium) return interaction.editReply(response(
             `${client.emoji.premium} | **__Premium Required__**\n\n` +
             `This command requires Premium for this server.\n` +
-            `Activate your premium code with **/redeem** to unlock it.\n\n` +
+            `Activate your premium code with:\n**/redeem**\n\n` +
             `Check your server's status with **/premium**.`
         ));
         const prefix = await client.data.get(`${interaction.guild.id}-prefix`) || client.config.prefix;
