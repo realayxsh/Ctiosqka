@@ -45,7 +45,7 @@ class Help extends AvonCommand{
                             `${client.emoji.arrow} Start listening with \`play\`.\n\n` +
                             `${client.emoji.premium} **Radio Premium** — custom server branding and premium audio presets.\n` +
                             `Explore \`premium\`, or select **Premium** below.\n\n` +
-                            `${client.emoji.arrow} [Invite](https://discord.com/oauth2/authorize?client_id=1570724994919563304&permissions=274881399809&integration_type=0&scope=bot) | [Support](${client.config.server})` +
+                            `${client.emoji.arrow} [Invite](https://discord.com/oauth2/authorize?client_id=1570724994919563304&permissions=281749858110529&integration_type=0&scope=bot) | [Support](${client.config.server})` +
                             (isVotingEnabled(client) ? ` | [Vote](https://top.gg/bot/1097475016880304180/vote)` : '')
                         ))
                         .setThumbnailAccessory(new ThumbnailBuilder().setURL(client.user.displayAvatarURL({ dynamic: true })))
