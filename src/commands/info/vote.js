@@ -7,7 +7,7 @@ class Vote extends AvonCommand{
     get aliases(){ return ['vot'] }
     get cat(){ return 'info' }
     async run(client, message, args, prefix){
-        if (!isVotingEnabled(client)) return message.channel.send({ content: 'Voting is temporarily disabled.' });
+        if (!isVotingEnabled(client)) return message.channel.send({ content: `${client.emoji.warning} | Voting is temporarily disabled.` });
         const container = new ContainerBuilder()
             .addSectionComponents(
                 new SectionBuilder()

@@ -156,7 +156,7 @@ class AvonCommands extends EventEmitter {
             const avonCommand = this.commands.get(commandName) || this.commands.find((c) => c.aliases && c.aliases.includes(commandName));
             if(!avonCommand) return;
             if(avonCommand.name === 'vote' && !isVotingEnabled(this.client))
-                return message.channel.send(cv2('Voting is temporarily disabled.'));
+                return message.channel.send(cv2(`${this.client.emoji.warning} | Voting is temporarily disabled.`));
             if(avonCommand.ownerOnly && !isOwner(this.client, message.author.id)) return;
 
             // ── Disabled channel check ──
@@ -167,10 +167,10 @@ class AvonCommands extends EventEmitter {
             if(channelDisabled === `disabled` && !this.client.config.owners.includes(message.author.id) && !canEnable) return;
 
             if(!message.guild.members.me.permissionsIn(message.channel).has(PermissionsBitField.Flags.ViewChannel)) return;
-            if(!message.guild.members.me.permissionsIn(message.channel).has(PermissionsBitField.Flags.SendMessages)) return message.author.send({ content: `I don't have **Send Messages** permissions in that channel` }).catch(e => null);
-            if(!message.guild.members.me.permissionsIn(message.channel).has(PermissionsBitField.Flags.ReadMessageHistory)) return message.channel.send({ content: `I don't have **Read Message History** permissions here` });
-            if(!message.guild.members.me.permissionsIn(message.channel).has(PermissionsBitField.Flags.UseExternalEmojis)) return message.channel.send({ content: `I don't have **Use External Emojis** permissions here` });
-            if(!message.guild.members.me.permissionsIn(message.channel).has(PermissionsBitField.Flags.EmbedLinks)) return message.channel.send({ content: `I don't have **Embed Links** permissions here` });
+            if(!message.guild.members.me.permissionsIn(message.channel).has(PermissionsBitField.Flags.SendMessages)) return message.author.send({ content: `${this.client.emoji.warning} | I don't have **Send Messages** permissions in that channel` }).catch(e => null);
+            if(!message.guild.members.me.permissionsIn(message.channel).has(PermissionsBitField.Flags.ReadMessageHistory)) return message.channel.send({ content: `${this.client.emoji.warning} | I don't have **Read Message History** permissions here` });
+            if(!message.guild.members.me.permissionsIn(message.channel).has(PermissionsBitField.Flags.UseExternalEmojis)) return message.channel.send({ content: `${this.client.emoji.warning} | I don't have **Use External Emojis** permissions here` });
+            if(!message.guild.members.me.permissionsIn(message.channel).has(PermissionsBitField.Flags.EmbedLinks)) return message.channel.send({ content: `${this.client.emoji.warning} | I don't have **Embed Links** permissions here` });
 
             wh.command(avonCommand.name, {
                 userId: message.author.id, guildId: message.guild.id, channelId: message.channel.id,
@@ -179,10 +179,10 @@ class AvonCommands extends EventEmitter {
 
             let client = this.client;
             if(avonCommand.inVoice && !message.member?.voice?.channel)
-                return message.channel.send(cv2(`${client.emoji.cross} | You must be connected to a voice channel.`));
+                return message.channel.send(cv2(`${client.emoji.warning} | You must be connected to a voice channel.`));
             if(avonCommand.sameVoice){
                 if(message.guild.members.me.voice.channelId !== message.member.voice.channelId && message.guild.members.me.voice.channel)
-                    return message.channel.send(cv2(`${client.emoji.cross} | You must be connected to ${message.guild.members.me.voice.channel}`));
+                    return message.channel.send(cv2(`${client.emoji.warning} | You must be connected to ${message.guild.members.me.voice.channel}`));
             }
 
             // ── Run vote + premium checks in parallel for speed ──
@@ -213,7 +213,7 @@ class AvonCommands extends EventEmitter {
                         .addSectionComponents(
                             new SectionBuilder()
                                 .addTextDisplayComponents(new TextDisplayBuilder().setContent(
-                                    `${client.emoji.premium} | **__Premium Required__**\n\n` +
+                                    `${client.emoji.warning} | **__Premium Required__**\n\n` +
                                     `${client.emoji.cross} | This command is **Premium Only!**\n\n` +
                                     `Get a premium code from the bot owner and activate it with:\n**/redeem**\n` +
                                     `Or use **\`${prefix}redeem <code>\`**.\n\n` +
@@ -233,7 +233,7 @@ class AvonCommands extends EventEmitter {
                         components: [new ContainerBuilder()
                             .addSectionComponents(
                                 new SectionBuilder()
-                                    .addTextDisplayComponents(new TextDisplayBuilder().setContent(`**${client.emoji.cross} | I am not playing anything**`))
+                                    .addTextDisplayComponents(new TextDisplayBuilder().setContent(`**${client.emoji.warning} | I am not playing anything**`))
                                     .setThumbnailAccessory(new ThumbnailBuilder().setURL(message.author.displayAvatarURL({ dynamic: true })))
                             )
                         ]

@@ -31,7 +31,7 @@ class PlayerEmpty extends AvonClientEvent{
                 await this.client.channels.fetch(player.textId).catch(() => null);
             const container = new ContainerBuilder().addTextDisplayComponents(
                 new TextDisplayBuilder().setContent(
-                    `${this.client.emoji.autoplay || this.client.emoji.music} | Autoplay couldn't find a playable new song. Add a song with /play to continue.`
+                    `${this.client.emoji.warning} | Autoplay couldn't find a playable new song. Add a song with /play to continue.`
                 )
             );
             await channel?.send({ flags: [MessageFlags.IsComponentsV2], components: [container] }).catch(() => {});

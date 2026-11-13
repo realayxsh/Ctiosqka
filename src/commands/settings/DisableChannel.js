@@ -17,7 +17,7 @@ class DisableChannel extends AvonCommand{
         };
 
         if(!message.member.permissions.has(PermissionsBitField.Flags.ManageChannels) && !client.config.owners.includes(message.author.id)){
-            return send(`${client.emoji.cross} | **You need Manage Channels permission to use this.**`);
+            return send(`${client.emoji.warning} | **You need Manage Channels permission to use this.**`);
         }
 
         let target = message.mentions.channels.first() || (args[0] ? message.guild.channels.cache.get(args[0]) : message.channel);

@@ -106,7 +106,7 @@ function filterMessage(result, emoji) {
 
 function filterFailure(error, emoji) {
     const unsupported = /^Audio server (?:does not support|did not report)/.test(error?.message || '');
-    return `${emoji.cross} | ${unsupported ? error.message : 'Could not apply the filter. The audio server rejected or did not confirm the change.'} Please try again.`;
+    return `${unsupported ? emoji.warning : emoji.cross} | ${unsupported ? error.message : 'Could not apply the filter. The audio server rejected or did not confirm the change.'} Please try again.`;
 }
 
 module.exports = { PRESETS, FILTER_KEYS, FILTER_OPTIONS, cleanFilters, applyFilter, filterMessage, filterFailure };
