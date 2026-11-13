@@ -68,7 +68,7 @@ class Help extends AvonCommand{
                 )
                 .addSeparatorComponents(new SeparatorBuilder().setDivider(true))
                 .addTextDisplayComponents(new TextDisplayBuilder().setContent(
-                    musicCmds.sort((a,b) => a.name.localeCompare(b.name)).map(r => `\`${commandName(r)}\``).join(`  `) || 'None'
+                    musicCmds.sort((a,b) => a.name.localeCompare(b.name)).map(r => `\`${commandName(r)}\``).join(`, `) || 'None'
                 ));
 
             const c2 = new ContainerBuilder()
@@ -106,7 +106,7 @@ class Help extends AvonCommand{
                 )
                 .addSeparatorComponents(new SeparatorBuilder().setDivider(true))
                 .addTextDisplayComponents(new TextDisplayBuilder().setContent(
-                    infoCmds.sort((a,b) => a.name.localeCompare(b.name)).map(r => `\`${commandName(r)}\``).join(`  `) || 'None'
+                    infoCmds.sort((a,b) => a.name.localeCompare(b.name)).map(r => `\`${commandName(r)}\``).join(`, `) || 'None'
                 ));
 
             const c5 = new ContainerBuilder()
@@ -118,28 +118,28 @@ class Help extends AvonCommand{
                 .addSeparatorComponents(new SeparatorBuilder().setDivider(true))
                 .addTextDisplayComponents(new TextDisplayBuilder().setContent(
                     `${client.emoji.music} **Music [${musicCmds.size}]**\n` +
-                    musicCmds.sort((a,b) => a.name.localeCompare(b.name)).map(r => `\`${commandName(r)}\``).join(`  `)
+                    musicCmds.sort((a,b) => a.name.localeCompare(b.name)).map(r => `\`${commandName(r)}\``).join(`, `)
                 ))
                 .addSeparatorComponents(new SeparatorBuilder().setDivider(false))
                 .addTextDisplayComponents(new TextDisplayBuilder().setContent(
                     `${client.emoji.filters} **Filters [${filterCmds.size}]**\n` +
                     `\`filter\` — Choose an audio effect in the slash menu.\n` +
-                    filterCmds.sort((a,b) => a.name.localeCompare(b.name)).map(r => `\`${commandName(r)}\``).join(`  `)
+                    filterCmds.sort((a,b) => a.name.localeCompare(b.name)).map(r => `\`${commandName(r)}\``).join(`, `)
                 ))
                 .addSeparatorComponents(new SeparatorBuilder().setDivider(false))
                 .addTextDisplayComponents(new TextDisplayBuilder().setContent(
                     `${client.emoji.settings} **Settings [${setCmds.size}]**\n` +
-                    setCmds.sort((a,b) => a.name.localeCompare(b.name)).map(r => `\`${commandName(r)}\``).join(`  `)
+                    setCmds.sort((a,b) => a.name.localeCompare(b.name)).map(r => `\`${commandName(r)}\``).join(`, `)
                 ))
                 .addSeparatorComponents(new SeparatorBuilder().setDivider(false))
                 .addTextDisplayComponents(new TextDisplayBuilder().setContent(
                     `${client.emoji.info} **Information [${infoCmds.size}]**\n` +
-                    infoCmds.sort((a,b) => a.name.localeCompare(b.name)).map(r => `\`${commandName(r)}\``).join(`  `)
+                    infoCmds.sort((a,b) => a.name.localeCompare(b.name)).map(r => `\`${commandName(r)}\``).join(`, `)
                 ))
                 .addSeparatorComponents(new SeparatorBuilder().setDivider(false))
                 .addTextDisplayComponents(new TextDisplayBuilder().setContent(
                     `${client.emoji.premium} **Premium [${premCmds.size + 1}]**\n` +
-                    [...premCmds.sort((a,b) => a.name.localeCompare(b.name)).map(r => `\`${commandName(r)}\``), `\`customize\``].join(`  `)
+                    [...premCmds.sort((a,b) => a.name.localeCompare(b.name)).map(r => `\`${commandName(r)}\``), `\`customize\``].join(`, `)
                 ))
                 .addSeparatorComponents(new SeparatorBuilder().setDivider(true))
                 .addTextDisplayComponents(new TextDisplayBuilder().setContent(`-# Developed By Radio Development`));

@@ -161,7 +161,7 @@ test('help Music and Information list commands side by side like All Commands', 
         f.client.AvonCommands.commands.set(name, { name, cat });
     }
     await new Help(f.client).run(f.client, f.message, [], '+');
-    for (const [customId, expected] of [['m1', '`pause`  `play`  `queue`'], ['m4', '`help`  `ping`']]) {
+    for (const [customId, expected] of [['m1', '`pause`, `play`, `queue`'], ['m4', '`help`, `ping`']]) {
         let payload;
         await f.events.collect({ isButton: () => true, customId, update: async data => { payload = data; } });
         const components = payload.components[0].toJSON().components;
