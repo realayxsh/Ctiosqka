@@ -155,6 +155,47 @@ test('loading a Spotify playlist does not resume paused playback', async () => {
     assert.equal(f.starts, 0);
 });
 
+test('first link search overlaps voice connection and waits before queueing', async () => {
+    const f = playFixture();
+    f.client.poru.players.clear();
+    let connect;
+    let searched = false;
+    f.client.poru.createPlayer = () => new Promise(resolve => { connect = resolve; });
+    f.client.poru.search = async (...args) => {
+        searched = true;
+        return f.player.search(...args);
+    };
+    const running = new Play(f.client).run(f.client, f.message, [playlist], '+');
+    await new Promise(resolve => setImmediate(resolve));
+    assert.equal(searched, true);
+    assert.equal(f.queued.length, 0);
+    f.client.poru.players.set('guild', f.player);
+    connect(f.player);
+    await running;
+    assert.equal(f.queued.length, 3);
+    assert.equal(f.starts, 1);
+});
+
+test('first text query shows the engine picker before voice connects', async () => {
+    const f = playFixture();
+    f.client.poru.players.clear();
+    let connect;
+    f.client.poru.createPlayer = () => new Promise(resolve => { connect = resolve; });
+    const collector = { on: () => collector };
+    f.message.channel.send = async payload => {
+        f.sent.push(payload);
+        return {
+            edit: async payload => f.edits.push(payload),
+            createMessageComponentCollector: () => collector,
+        };
+    };
+    await new Play(f.client).run(f.client, f.message, ['my song'], '+');
+    assert.match(contents(f.edits[0]), /Choose the search engine/);
+    assert.equal(f.queued.length, 0);
+    f.client.poru.players.set('guild', f.player);
+    connect(f.player);
+});
+
 test('provider failures always replace Searching and identify the correct source', async () => {
     for (const query of [playlist, 'https://www.deezer.com/playlist/123']) {
         const f = playFixture();

@@ -49,20 +49,31 @@ class Play extends AvonCommand {
                 );
             let searchingMsg = await message.channel.send({ flags: [MessageFlags.IsComponentsV2], components: [searchingContainer] });
 
-            let channel = message.member.voice.channel;
-            let player = client.poru.players.get(message.guild.id);
-            if (!player) {
-                player = await client.poru.createPlayer({
+            const existingPlayer = client.poru.players.get(message.guild.id);
+            // Keep the connection in flight without delaying the engine picker.
+            // Capture failures immediately, including when the user never selects.
+            const playerReady = Promise.resolve().then(() => existingPlayer || client.poru.createPlayer({
                     guildId: message.guild.id,
-                    voiceId: channel.id,
+                    voiceId: message.member.voice.channel.id,
                     textId: message.channel.id,
                     deaf: true,
                     volume: 100,
                     shardId: message.guild.shardId
-                });
-            }
-
-            player.setTextChannel(message.channel.id);
+                })).then(player => ({ player }), error => ({ error }));
+            const searchWithPlayer = async options => {
+                // Kazagumo can search without an established Discord voice session.
+                const [ready, result] = await Promise.all([
+                    playerReady,
+                    existingPlayer ? existingPlayer.search(query, options) : client.poru.search(query, options)
+                ]);
+                if (ready.error) throw ready.error;
+                const player = ready.player;
+                if (client.poru.players.get(message.guild.id) !== player) {
+                    throw new Error('Player changed during search');
+                }
+                player.setTextChannel(message.channel.id);
+                return { player, result };
+            };
 
             if (/^(https?:\/\/|spotify:)/i.test(query)) {
                 const source = musicLinkSource(query);
@@ -71,7 +82,7 @@ class Play extends AvonCommand {
                 }
 
                 try {
-                    let result = await player.search(query, { requester: message.author });
+                    const { player, result } = await searchWithPlayer({ requester: message.author });
                     if (!result || !result.tracks.length) {
                         return editMsg(searchingMsg, `**${client.emoji.cross} | Could not load this ${source} link**\n\nNo playable tracks were returned. Check that it is public and accessible, or try another link.`);
                     }
@@ -120,11 +131,6 @@ class Play extends AvonCommand {
                 await interaction.deferUpdate();
 
                 try {
-                    const player = client.poru.players.get(message.guild.id);
-                    if (!player) {
-                        return editMsg(searchingMsg, `**${client.emoji.cross} | Player no longer exists. Please run the command again.**`);
-                    }
-
                     const engines = {
                         def: { label: 'Default' },
                         spoti: { engine: 'spotify', label: 'Spotify' },
@@ -135,7 +141,7 @@ class Play extends AvonCommand {
                     if (!selectedEngine) {
                         return editMsg(searchingMsg, `**${client.emoji.cross} | Unknown search engine. Please run the command again.**`);
                     }
-                    const result = await player.search(query, {
+                    const { player, result } = await searchWithPlayer({
                         ...(selectedEngine.engine ? { engine: selectedEngine.engine } : {}),
                         requester: message.author
                     });
