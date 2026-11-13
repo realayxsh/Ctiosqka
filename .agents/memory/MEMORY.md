@@ -7,3 +7,4 @@
 - [Voting availability](voting-availability.md) — voting is temporarily hidden and disabled; retain it for reactivation when the user requests it.
 - [Spotify link loading](spotify-link-loading.md) — empty plugin results may hide API/schema failures; verify native node resolution before blaming a public link.
 - [Warning emoji semantics](emoji-semantics.md) — add warnings selectively for caution/already-active notices; preserve crosses for rejected commands and errors.
+- [MongoDB configuration preference](mongodb-configuration.md) — the user wants MongoDB settings kept in config.json, not moved into Secrets.
