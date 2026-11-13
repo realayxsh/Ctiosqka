@@ -17,6 +17,7 @@ function fixture() {
         poru: { players: new Map([['guild', player]]) },
         data: { get: async key => key.endsWith('-247') ? 'enabled' : enabled,
             set: async (key, value) => { enabled = value; } },
+        data3: { get: async () => ({ active: true, expiresAt: null }) },
         channels: { cache: new Map([['text', { send: async payload => sent.push(payload) }]]) } };
     return { client, player, seed, next, searches, sent, get plays() { return plays; },
         get enabled() { return enabled; }, set enabled(value) { enabled = value; } };
@@ -83,9 +84,11 @@ test('does not restart stopped players or continue after autoplay is disabled', 
 
 test('duplicate empty events start at most one recommendation', async () => {
     const f = fixture();
-    let finish;
-    f.player.search = () => new Promise(resolve => { finish = resolve; });
+    let finish, searching;
+    const entered = new Promise(resolve => { searching = resolve; });
+    f.player.search = () => new Promise(resolve => { finish = resolve; searching(); });
     const first = continueAutoplay(f.client, f.player);
+    await entered;
     assert.equal(await continueAutoplay(f.client, f.player), true);
     finish({ tracks: [f.next] });
     await first;

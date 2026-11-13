@@ -6,6 +6,7 @@ require(`moment-duration-format`);
 const { applyFilter } = require('../../audio/filters');
 const wh = require('../../structures/webhook');
 const { buildPlaybackRows } = require('../../structures/playbackControls');
+const { isPremium } = require('../../structures/premiumAccess');
 
 class TrackStart extends AvonClientEvent {
     get name() { return 'playerStart' }
@@ -24,7 +25,12 @@ class TrackStart extends AvonClientEvent {
         }
 
         try {
-            await applyFilter(player, 'none', { initialize: true });
+            const active = player.data.get('activeFilter');
+            if (active && active !== 'none' && !await isPremium(this.client, player.guildId)) {
+                await applyFilter(player, 'none');
+            } else {
+                await applyFilter(player, 'none', { initialize: true });
+            }
         } catch (error) {
             wh.error('Audio filter initialization failed', error);
             console.warn('[Audio Filters] Could not initialize clean audio');

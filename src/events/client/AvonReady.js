@@ -2,6 +2,7 @@ const { ActivityType } = require("discord.js");
 const AvonClientEvent = require("../../structures/Eventhandler");
 const wh = require("../../structures/webhook");
 const { registerCommands } = require('../../slash/register');
+const { isPremium } = require('../../structures/premiumAccess');
 class AvonReady extends AvonClientEvent{
     get name(){
         return 'clientReady';
@@ -42,6 +43,7 @@ class AvonReady extends AvonClientEvent{
             if(data === `enabled`)
             {
                 try{
+                    if (!await isPremium(this.client, x.id)) return;
                     await this.client.poru.createPlayer({
                         guildId : x.id,
                         voiceId : await this.client.data.get(`${x.id}-voice`),

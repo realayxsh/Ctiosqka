@@ -1,4 +1,5 @@
 const wh = require('../structures/webhook');
+const { isPremium } = require('../structures/premiumAccess');
 
 const pending = new WeakSet();
 const normalize = value => String(value || '').toLowerCase().replace(/[^\p{L}\p{N}]+/gu, ' ').trim();
@@ -19,6 +20,7 @@ async function continueAutoplay(client, player) {
         const busy = () => client.poru.players.get(player.guildId) !== player ||
             player.state >= 4 || player.playing || player.queue.current || player.queue.size > 0;
         if (busy()) return true;
+        if (!await isPremium(client, player.guildId)) return false;
         const history = Array.isArray(player.queue.previous)
             ? player.queue.previous : [player.queue.previous].filter(Boolean);
         const seed = history[0];
@@ -41,6 +43,8 @@ async function continueAutoplay(client, player) {
             const enabled = await client.data.get(`${player.guildId}-autoPlay`);
             if (busy()) return true;
             if (enabled !== 'enabled') return true;
+            if (!await isPremium(client, player.guildId)) return false;
+            if (busy()) return true;
             const candidates = (result?.tracks || []).filter(track =>
                 !track.isStream && track.length >= 30000 &&
                 !history.slice(0, 20).some(previous => sameTrack(track, previous))

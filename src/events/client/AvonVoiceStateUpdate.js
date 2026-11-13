@@ -1,5 +1,6 @@
 const delay = require(`delay`);
 const AvonClientEvent = require("../../structures/Eventhandler");
+const { isPremium } = require('../../structures/premiumAccess');
 
 class AvonVoiceStateUpdate extends AvonClientEvent {
     get name() { return 'voiceStateUpdate'; }
@@ -38,7 +39,7 @@ class AvonVoiceStateUpdate extends AvonClientEvent {
         if (humanCount > 0) return;
 
         const is247 = await this.client.data.get(`${guild.id}-247`);
-        if (is247 === `enabled`) return; // stay in VC in 247 mode
+        if (is247 === `enabled` && await isPremium(this.client, guild.id)) return;
 
         // Wait 1 minute — if still empty, leave
         await delay(60000);

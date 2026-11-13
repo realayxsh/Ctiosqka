@@ -1,6 +1,7 @@
 const { ContainerBuilder, TextDisplayBuilder, MessageFlags } = require("discord.js");
 const AvonClientEvent = require("../../structures/Eventhandler");
 const wh = require('../../structures/webhook');
+const { isPremium } = require('../../structures/premiumAccess');
 
 class TrackStuck extends AvonClientEvent {
     get name() { return 'trackStuck'; }
@@ -22,7 +23,7 @@ class TrackStuck extends AvonClientEvent {
             } else {
                 // Check 247 before destroying — in 247 mode keep the player alive
                 const is247 = await this.client.data.get(`${player.guildId}-247`);
-                if(is247 === `enabled`) return;
+                if(is247 === `enabled` && await isPremium(this.client, player.guildId)) return;
                 player.destroy();
             }
         } catch (e) { console.error('[TrackStuck handler]', e); }

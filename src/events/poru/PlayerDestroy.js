@@ -1,6 +1,7 @@
 const { PermissionsBitField, ContainerBuilder, TextDisplayBuilder, MessageFlags } = require("discord.js");
 const AvonClientEvent = require("../../structures/Eventhandler");
 const wh = require('../../structures/webhook');
+const { isPremium } = require('../../structures/premiumAccess');
 
 const recreateCooldown = new Map();
 const COOLDOWN_MS = 15000;
@@ -16,6 +17,7 @@ class PlayerDestroy extends AvonClientEvent{
         if(!db) return;
         if(db === `disabled`) return;
         if(db === `enabled`){
+            if (!await isPremium(this.client, guild.id)) return;
             const now = Date.now();
             const lastRecreate = recreateCooldown.get(guild.id) || 0;
             if(now - lastRecreate < COOLDOWN_MS) return;

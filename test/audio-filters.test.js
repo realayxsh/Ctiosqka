@@ -40,7 +40,7 @@ function clientFor(player) {
         emoji, config: { owners: ['tester'], prefix: '+' },
         data: { get: async () => undefined },
         poru: { players: new Map([['guild', player]]) },
-        data3: { get: async () => null },
+        data3: { get: async () => ({ active: true, expiresAt: null }) },
         AvonCommands: { commands: new Map(commandClasses().map(Command => {
             const command = new Command({});
             return [command.name, command];
@@ -231,6 +231,7 @@ test('both dropdowns enforce voice and premium access before changing audio', as
         await new Interactions(client).run(wrongVoice);
         assert.match(responseText(wrongVoice), /same voice channel/);
         const denied = interactionFor('dolbyatmos', type);
+        client.data3.get = async () => null;
         denied.user.id = 'non-owner';
         denied.guild.id = `no-premium-${type}`;
         client.poru.players.set(denied.guild.id, player);

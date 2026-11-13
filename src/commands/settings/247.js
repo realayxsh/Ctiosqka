@@ -3,6 +3,7 @@ const AvonCommand = require("../../structures/avonCommand");
 
 class twentyfourseven extends AvonCommand{
     get name(){ return '247'; }
+    get premium(){ return true; }
     get aliases(){ return ['24-7','twentyfourseven','alwaysvc','24/7'] }
     get cat(){ return 'set' }
     get player(){ return true; }
@@ -22,20 +23,20 @@ class twentyfourseven extends AvonCommand{
             return send(`**${client.emoji.cross} | You are lacking permissions: Manage Guild**`);
         }
         let data = await client.data.get(`${message.guild.id}-247`);
-        if(!data) await client.data.set(`${message.guild.id}-247`, `disabled`);
-        if(data === `disabled`){
-            client.data.set(`${message.guild.id}-247`, `enabled`);
-            client.data.set(`${message.guild.id}-text`, `${message.channel.id}`);
-            client.data.set(`${message.guild.id}-voice`, `${message.member.voice.channelId}`);
+        if(data !== `enabled`){
+            await Promise.all([
+                client.data.set(`${message.guild.id}-247`, `enabled`),
+                client.data.set(`${message.guild.id}-text`, `${message.channel.id}`),
+                client.data.set(`${message.guild.id}-voice`, `${message.member.voice.channelId}`)
+            ]);
             return send(`**${client.emoji.mode247 || client.emoji.settings} | Enabled 247 Mode of ${client.user.username}**`);
         } else if(data === `enabled`){
-            client.data.set(`${message.guild.id}-247`, `disabled`);
-            client.data.delete(`${message.guild.id}-text`);
-            client.data.delete(`${message.guild.id}-voice`);
+            await Promise.all([
+                client.data.set(`${message.guild.id}-247`, `disabled`),
+                client.data.delete(`${message.guild.id}-text`),
+                client.data.delete(`${message.guild.id}-voice`)
+            ]);
             return send(`**${client.emoji.mode247 || client.emoji.settings} | Disabled 247 Mode of ${client.user.username}**`);
-        } else {
-            client.data.set(`${message.guild.id}-247`, `disabled`);
-            return send(`**${client.emoji.cross} | Please try again running that command**`);
         }
     }
 }

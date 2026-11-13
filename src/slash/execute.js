@@ -5,7 +5,6 @@ const { OWNER_COMMAND_NAMES, createDefinitions, slashArguments } = require('./ca
 const wh = require('../structures/webhook');
 
 const publicNames = new Set(createDefinitions().map(command => command.name));
-const VOTE_FILTERS = new Set(['8d', 'bassboost', 'nightcore', 'treblebass', 'tremolo']);
 const response = text => ({
     flags: [MessageFlags.IsComponentsV2],
     components: [new ContainerBuilder().addTextDisplayComponents(new TextDisplayBuilder().setContent(text))],
@@ -66,6 +65,9 @@ async function executeSlash(client, interaction, access) {
         }
         const player = client.poru.players.get(interaction.guild.id);
         if (name === 'filter') {
+            if (!await access.isPremium(client, interaction.guild.id)) {
+                return interaction.editReply(response(`${client.emoji.premium} | This filter requires Premium for this server. Use /redeem to activate it.`));
+            }
             const chosen = originalName === 'filters' ? interaction.options.getString('filter') : interaction.options.getString('effect');
             if (!chosen) {
                 const menu = new StringSelectMenuBuilder().setCustomId('filter_select').setPlaceholder('Choose an audio filter')
@@ -86,14 +88,6 @@ async function executeSlash(client, interaction, access) {
             if (!player?.queue.current) return interaction.editReply(response(`${client.emoji.cross} | Nothing is playing right now.`));
             if (!member.voice.channelId || member.voice.channelId !== interaction.guild.members.me.voice.channelId) {
                 return interaction.editReply(response(`${client.emoji.cross} | You must be in the same voice channel as me.`));
-            }
-            if (!isOwner && id !== 'none') {
-                if (VOTE_FILTERS.has(id) && !await access.hasVoted(interaction.user.id)) {
-                    return interaction.editReply(response(`${client.emoji.tick} | Vote required: https://top.gg/bot/${client.user.id}/vote`));
-                }
-                if (!VOTE_FILTERS.has(id) && !await access.isPremium(client, interaction.guild.id)) {
-                    return interaction.editReply(response(`${client.emoji.premium} | This filter requires Premium. Use /redeem to activate it.`));
-                }
             }
             try {
                 return interaction.editReply(response(filterMessage(await applyFilter(player, id, { toggle: true }), client.emoji)));
@@ -116,8 +110,8 @@ async function executeSlash(client, interaction, access) {
             return interaction.editReply(response(`${client.emoji.cross} | Nothing is playing right now.`));
         }
         const [voted, premium] = await Promise.all([
-            command.vote && !isOwner ? access.hasVoted(interaction.user.id) : true,
-            command.premium && !isOwner ? access.isPremium(client, interaction.guild.id) : true,
+            command.vote && !command.premium && !isOwner ? access.hasVoted(interaction.user.id) : true,
+            command.premium ? access.isPremium(client, interaction.guild.id) : true,
         ]);
         if (!voted) return interaction.editReply(response(`${client.emoji.tick} | Vote required: https://top.gg/bot/${client.user.id}/vote`));
         if (!premium) return interaction.editReply(response(`${client.emoji.premium} | This command requires Premium. Use /redeem to activate it.`));

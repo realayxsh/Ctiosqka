@@ -4,6 +4,8 @@ const { ContainerBuilder, TextDisplayBuilder, MessageFlags } = require('discord.
 const { applyFilter, filterMessage, filterFailure } = require('../audio/filters');
 
 class FilterCommand extends AvonCommand {
+    get premium() { return true; }
+
     async run(client, message, args, prefix, player) {
         const send = text => message.channel.send({
             flags: [MessageFlags.IsComponentsV2],

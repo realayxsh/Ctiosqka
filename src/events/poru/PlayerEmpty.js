@@ -3,6 +3,7 @@ const { ContainerBuilder, TextDisplayBuilder, SectionBuilder, ThumbnailBuilder, 
 const AvonClientEvent = require("../../structures/Eventhandler");
 const wh = require('../../structures/webhook');
 const { continueAutoplay } = require('../../audio/autoplay');
+const { isPremium } = require('../../structures/premiumAccess');
 
 class PlayerEmpty extends AvonClientEvent{
     get name(){ return 'playerEmpty'; }
@@ -11,10 +12,12 @@ class PlayerEmpty extends AvonClientEvent{
         // Check 247 FIRST so we never show "Queue Concluded" while in 247 mode
         let data = await this.client.data.get(`${player.guildId}-247`);
         if(!data || data === null) this.client.data.set(`${player.guildId}-247`, `disabled`);
-        const is247 = data === `enabled`;
-
         let db = await this.client.data.get(`${player.guildId}-autoPlay`);
         if(!db || db === null) this.client.data.set(`${player.guildId}-autoPlay`, `disabled`);
+        const premium = (data === 'enabled' || db === 'enabled') &&
+            await isPremium(this.client, player.guildId);
+        const is247 = data === `enabled` && premium;
+        if (!premium) db = 'disabled';
 
         if(db === `enabled`){
             try {

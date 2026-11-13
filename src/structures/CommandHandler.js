@@ -38,20 +38,7 @@ async function hasVoted(userId) {
     }
 }
 
-// ── Premium cache: TTL 2 minutes per guild ──
-const _premCache = new Map();
-const PREM_TTL = 2 * 60 * 1000;
-async function isPremium(client, guildId) {
-    const entry = _premCache.get(guildId);
-    if (entry && Date.now() < entry.expires) return entry.active;
-    const premData = await client.data3.get(`premium_${guildId}`);
-    const active = !!(premData && (premData.expiresAt === null || Date.now() < premData.expiresAt));
-    if (premData && !active) { client.data3.delete(`premium_${guildId}`); }
-    _premCache.set(guildId, { active, expires: Date.now() + PREM_TTL });
-    return active;
-}
-// Allow invalidating the premium cache when redeem/revoke runs
-function invalidatePremCache(guildId) { _premCache.delete(guildId); }
+const { isPremium, invalidatePremCache } = require('./premiumAccess');
 
 const cv2 = (text) => ({
     flags: [MessageFlags.IsComponentsV2],
@@ -193,8 +180,8 @@ class AvonCommands extends EventEmitter {
             }
 
             // ── Run vote + premium checks in parallel for speed ──
-            const needsVote    = !!avonCommand.vote    && !client.config.owners.includes(message.author.id);
-            const needsPremium = !!avonCommand.premium && !client.config.owners.includes(message.author.id);
+            const needsPremium = !!avonCommand.premium;
+            const needsVote    = !needsPremium && !!avonCommand.vote && !client.config.owners.includes(message.author.id);
 
             const [voted, active] = await Promise.all([
                 needsVote    ? hasVoted(message.author.id)            : Promise.resolve(true),

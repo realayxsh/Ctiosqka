@@ -23,18 +23,7 @@ async function hasVoted(userId) {
     }
 }
 
-// ── Premium cache: TTL 2 minutes per guild ──
-const _premCache = new Map();
-const PREM_TTL = 2 * 60 * 1000;
-async function isPremium(client, guildId) {
-    const entry = _premCache.get(guildId);
-    if (entry && Date.now() < entry.expires) return entry.active;
-    const premData = await client.data3.get(`premium_${guildId}`);
-    const active = !!(premData && (premData.expiresAt === null || Date.now() < premData.expiresAt));
-    if (premData && !active) { client.data3.delete(`premium_${guildId}`); }
-    _premCache.set(guildId, { active, expires: Date.now() + PREM_TTL });
-    return active;
-}
+const { isPremium } = require('../../structures/premiumAccess');
 
 const { PRESETS, applyFilter, filterMessage, filterFailure } = require('../../audio/filters');
 
@@ -199,46 +188,10 @@ class AvonInteractions extends AvonClientEvents{
                 if(selected !== 'none' && !Object.hasOwn(PRESETS, selected))
                     return interaction.editReply(cv2(`${this.client.emoji.cross} | Unknown filter.`));
 
-                // Vote-only filters (free with vote, no premium needed)
-                const VOTE_ONLY_FILTERS = new Set(['8d', 'bassboost', 'nightcore', 'treblebass', 'tremolo']);
-                const isOwner = this.client.config.owners.includes(interaction.user.id);
-
-                if(selected !== 'none' && !isOwner){
-                    if(VOTE_ONLY_FILTERS.has(selected)){
-                        // Only requires vote
-                        const voted = await hasVoted(interaction.user.id);
-                        if(!voted){
-                            return interaction.editReply({
-                                flags: [MessageFlags.IsComponentsV2],
-                                components: [
-                                    new ContainerBuilder().addTextDisplayComponents(new TextDisplayBuilder().setContent(
-                                        `${this.client.emoji.tick} | **Vote Required** — [Click here](https://top.gg/bot/1097475016880304180/vote) to vote and unlock this filter!`
-                                    )),
-                                    new ActionRowBuilder().addComponents(new ButtonBuilder().setStyle(ButtonStyle.Link).setLabel(`Vote on Top.gg`).setURL(`https://top.gg/bot/1097475016880304180/vote`))
-                                ]
-                            });
-                        }
-                    } else {
-                        // Requires premium
-                        const active = await isPremium(this.client, interaction.guild.id);
-                        if(!active){
-                            return interaction.editReply({
-                                flags: [MessageFlags.IsComponentsV2],
-                                components: [new ContainerBuilder()
-                                    .addSectionComponents(
-                                        new SectionBuilder()
-                                            .addTextDisplayComponents(new TextDisplayBuilder().setContent(
-                                                `**${this.client.emoji.premium} | Premium Required**\n\n` +
-                                                `${this.client.emoji.cross} | This filter is **Premium Only!**\n\n` +
-                                                `Ask the bot owner for a premium code and use \`+redeem <code>\` to activate premium for this server.\n\n` +
-                                                `Check your status with \`+premium\``
-                                            ))
-                                            .setThumbnailAccessory(new ThumbnailBuilder().setURL(interaction.user.displayAvatarURL({ dynamic: true })))
-                                    )
-                                ]
-                            });
-                        }
-                    }
+                if(!await isPremium(this.client, interaction.guild.id)){
+                    return interaction.editReply(cv2(
+                        `${this.client.emoji.premium} | Premium Required — activate Premium for this server with /redeem to use filters.`
+                    ));
                 }
 
                 const result = await applyFilter(player, selected, { toggle: true });
