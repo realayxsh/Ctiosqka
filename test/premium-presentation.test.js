@@ -38,6 +38,7 @@ test('automatic track cards retain every control, the filter dropdown, and Premi
     await new TrackStart(f.client).run(f.player, f.track);
     const card = serialize(f.sent[0]);
     assert.match(card, /Now Playing/);
+    assert(card.includes(`${emoji.music} **[Test song]`));
     assert.match(card, /Get Premium/);
     assert.match(card, /pl1/);
     assert.match(card, /pl_lyrics/);
@@ -69,6 +70,7 @@ test('pause and loop button updates preserve the same rows and all filter choice
     await event.run(interaction);
     assert.equal(updates.length, 2);
     for (const payload of updates) {
+        assert(serialize(payload).includes(`${emoji.music} **[Test song]`));
         const rows = payload.components[0].toJSON().components.filter(component => component.type === 1);
         assert.equal(rows[0].components.length, 5);
         assert.equal(rows[0].components[4].custom_id, 'pl_lyrics');

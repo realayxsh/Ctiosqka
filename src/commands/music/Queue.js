@@ -15,7 +15,7 @@ class Queue extends AvonCommand {
         try {
 
             const buildContainer = (page, pages, withButtons) => {
-                const nowPlaying = `**Now Playing**\n> [${player.queue.current.title}](${player.queue.current.uri || client.config.server}) ${client.emoji.arrow} ${ms(player.queue.current.length)}`;
+                const nowPlaying = `**Now Playing**\n> ${client.emoji.music} [${player.queue.current.title}](${player.queue.current.uri || client.config.server}) ${client.emoji.arrow} ${ms(player.queue.current.length)}`;
                 const comingUp = pages[page] ? `\n\n**Coming Up**\n${pages[page]}` : '';
                 const footer = pages.length > 1 ? `\n\n-# Page ${page + 1} of ${pages.length}` : '';
 
@@ -48,7 +48,7 @@ class Queue extends AvonCommand {
 
             if (player.queue.length) {
                 let queuedSongs = player.queue.map((track, index) =>
-                    `\`[${index + 1}]\` [${track.title.substring(0, 45)}](${track.uri || client.config.server}) ${client.emoji.arrow} ${ms(track.length)}`
+                    `\`[${index + 1}]\` ${client.emoji.music} [${track.title.substring(0, 45)}](${track.uri || client.config.server}) ${client.emoji.arrow} ${ms(track.length)}`
                 );
                 const maps = lodash.chunk(queuedSongs, 10);
                 const pages = maps.map(x => x.join('\n'));
@@ -83,7 +83,7 @@ class Queue extends AvonCommand {
                 });
 
             } else {
-                const nowPlayingOnly = `**Now Playing**\n> [${player.queue.current.title}](${player.queue.current.uri || client.config.server}) ${client.emoji.arrow} ${ms(player.queue.current.length)}`;
+                const nowPlayingOnly = `**Now Playing**\n> ${client.emoji.music} [${player.queue.current.title}](${player.queue.current.uri || client.config.server}) ${client.emoji.arrow} ${ms(player.queue.current.length)}`;
                 const container = new ContainerBuilder()
                     .addSectionComponents(
                         new SectionBuilder()

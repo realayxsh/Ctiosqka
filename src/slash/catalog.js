@@ -21,7 +21,7 @@ function commandInventory() {
 const inventory = commandInventory();
 const OWNER_COMMAND_NAMES = new Set(inventory.filter(command => command.ownerOnly).flatMap(command => [command.name, ...command.aliases]));
 const descriptions = {
-    play: 'Play a song or playlist', skip: 'Skip the current track', stop: 'Stop playback and clear the queue',
+    play: 'Play a song or playlist', skip: 'Skip the current track or jump to a queue position', stop: 'Stop playback and clear the queue',
     pause: 'Pause playback', resume: 'Resume playback', queue: 'Show the music queue',
     loop: 'Check or change the loop mode', shuffle: 'Shuffle the queue', clearqueue: 'Clear queued tracks',
     volume: 'Check or change playback volume', seek: 'Seek to a position in the current track',
@@ -38,7 +38,7 @@ const descriptions = {
 };
 
 const argumentsByCommand = {
-    play: ['query'], loop: ['type'], volume: ['level'], seek: ['position'], remove: ['position'],
+    play: ['query'], loop: ['type'], volume: ['level'], seek: ['position'], remove: ['position'], skip: ['position'],
     lyrics: ['query'], profile: ['user'], setprefix: ['prefix'], disablechannel: ['channel'], redeem: ['code'],
 };
 
@@ -61,6 +61,9 @@ function createDefinitions(client) {
                 break;
             case 'seek':
                 builder.addIntegerOption(option => option.setName('position').setDescription('Position in seconds').setMinValue(0).setRequired(true));
+                break;
+            case 'skip':
+                builder.addIntegerOption(option => option.setName('position').setDescription('Upcoming queue position; 1 is next. Omit to skip one song').setMinValue(1));
                 break;
             case 'remove':
                 builder.addIntegerOption(option => option.setName('position').setDescription('Queue position, starting at 2 for the next track').setMinValue(2).setRequired(true));

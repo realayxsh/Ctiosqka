@@ -41,7 +41,7 @@ class TrackStart extends AvonClientEvent {
                 new SectionBuilder()
                     .addTextDisplayComponents(
                         new TextDisplayBuilder().setContent(
-                            `**${this.client.emoji.nowplaying || this.client.emoji.music} | Now Playing**\n\n**[${track.title}](${url})**\nby **${track.author}** — \`${duration}\`\n\n${this.client.emoji.users} **Requester:** ${track.requester}`
+                            `**${this.client.emoji.nowplaying || this.client.emoji.music} | Now Playing**\n\n${this.client.emoji.music} **[${track.title}](${url})**\nby **${track.author}** — \`${duration}\`\n\n${this.client.emoji.users} **Requester:** ${track.requester}`
                         )
                     )
                     .setThumbnailAccessory(

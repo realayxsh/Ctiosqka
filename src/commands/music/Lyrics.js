@@ -125,7 +125,7 @@ class Lyrics extends AvonCommand {
                     .addSectionComponents(
                         new SectionBuilder()
                             .addTextDisplayComponents(
-                                new TextDisplayBuilder().setContent(`**Lyrics — ${track.title}**\nby **${track.author}**`)
+                                new TextDisplayBuilder().setContent(`**Lyrics — ${client.emoji.music} ${track.title}**\nby **${track.author}**`)
                             )
                             .setThumbnailAccessory(new ThumbnailBuilder().setURL(thumb))
                     )

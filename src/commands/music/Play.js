@@ -78,11 +78,11 @@ class Play extends AvonCommand {
                     if (result.type === `PLAYLIST`) {
                         for (let track of result.tracks) player.queue.add(track);
                         if (!player.playing && !player.paused) await player.play();
-                        return editMsg(searchingMsg, `**${client.emoji.queue} | Added Playlist to Queue**\n\n${client.emoji.queue} **Added** \`${result.tracks.length}\` songs from *${result.playlistName}*\n${client.emoji.users} **Requester:** ${message.author}\n${client.emoji.time} **Duration:** \`${ms(result.tracks.reduce((a, v) => a + (v.length || 0), 0))}\``);
+                        return editMsg(searchingMsg, `**${client.emoji.queue} | Added Playlist to Queue**\n\n${client.emoji.queue} **Added** \`${result.tracks.length}\` songs from ${client.emoji.music} *${result.playlistName}*\n${client.emoji.users} **Requester:** ${message.author}\n${client.emoji.time} **Duration:** \`${ms(result.tracks.reduce((a, v) => a + (v.length || 0), 0))}\``);
                     } else {
                         player.queue.add(result.tracks[0]);
                         if (!player.playing && !player.paused) await player.play();
-                        return editMsg(searchingMsg, `**${client.emoji.queue} | Added Song to Queue**\n\n${client.emoji.queue} **Added** [${result.tracks[0].title}](${result.tracks[0].uri || client.config.server})\n${client.emoji.users} **Requester:** ${message.author}\n${client.emoji.time} **Duration:** ${ms(result.tracks[0].length)}`);
+                        return editMsg(searchingMsg, `**${client.emoji.queue} | Added Song to Queue**\n\n${client.emoji.queue} **Added** ${client.emoji.music} [${result.tracks[0].title}](${result.tracks[0].uri || client.config.server})\n${client.emoji.users} **Requester:** ${message.author}\n${client.emoji.time} **Duration:** ${ms(result.tracks[0].length)}`);
                     }
                 } catch (e) {
                     wh.error(`${source} link loading failed`, e);
@@ -147,13 +147,13 @@ class Play extends AvonCommand {
                     if (result.type === `PLAYLIST`) {
                         for (const track of result.tracks) player.queue.add(track);
                         if (!player.playing && !player.paused) await player.play();
-                        return editMsg(searchingMsg, `**${client.emoji.queue} | Added Playlist to Queue**\n\n${client.emoji.queue} **Added** \`${result.tracks.length}\` songs from *${result.playlistName}*\n${client.emoji.users} **Requester:** ${message.author}\n${client.emoji.time} **Duration:** \`${ms(result.tracks.reduce((total, track) => total + (track.length || 0), 0))}\``);
+                        return editMsg(searchingMsg, `**${client.emoji.queue} | Added Playlist to Queue**\n\n${client.emoji.queue} **Added** \`${result.tracks.length}\` songs from ${client.emoji.music} *${result.playlistName}*\n${client.emoji.users} **Requester:** ${message.author}\n${client.emoji.time} **Duration:** \`${ms(result.tracks.reduce((total, track) => total + (track.length || 0), 0))}\``);
                     }
 
                     const track = result.tracks[0];
                     player.queue.add(track);
                     if (!player.playing && !player.paused) await player.play();
-                    return editMsg(searchingMsg, `**${client.emoji.queue} | Added Song to Queue**\n\n${client.emoji.queue} **Added** [${track.title}](${track.uri || client.config.server})\n${client.emoji.users} **Requester:** ${message.author}\n${client.emoji.time} **Duration:** ${ms(track.length || 0)}`);
+                    return editMsg(searchingMsg, `**${client.emoji.queue} | Added Song to Queue**\n\n${client.emoji.queue} **Added** ${client.emoji.music} [${track.title}](${track.uri || client.config.server})\n${client.emoji.users} **Requester:** ${message.author}\n${client.emoji.time} **Duration:** ${ms(track.length || 0)}`);
                 } catch (error) {
                     console.error('[Play Search]', error);
                     return editMsg(searchingMsg, `**${client.emoji.cross} | Search failed for that engine. Please try another engine or query.**`).catch(() => {});

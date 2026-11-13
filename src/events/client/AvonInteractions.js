@@ -39,7 +39,7 @@ function buildNowPlayingComponents(client, player) {
         .addSectionComponents(
             new SectionBuilder()
                 .addTextDisplayComponents(new TextDisplayBuilder().setContent(
-                    `**${client.emoji.nowplaying || client.emoji.music} | Now Playing**\n\n**[${track.title}](${url})**\nby **${track.author}** — \`${duration}\`\n\n${client.emoji.users} **Requester:** ${track.requester}`
+                    `**${client.emoji.nowplaying || client.emoji.music} | Now Playing**\n\n${client.emoji.music} **[${track.title}](${url})**\nby **${track.author}** — \`${duration}\`\n\n${client.emoji.users} **Requester:** ${track.requester}`
                 ))
                 .setThumbnailAccessory(new ThumbnailBuilder().setURL(requesterAvatar))
         )
@@ -119,7 +119,7 @@ class AvonInteractions extends AvonClientEvents{
                         components: [new ContainerBuilder()
                             .addSectionComponents(
                                 new SectionBuilder()
-                                    .addTextDisplayComponents(new TextDisplayBuilder().setContent(`**Lyrics — ${track.title}**\nby **${track.author}**`))
+                                    .addTextDisplayComponents(new TextDisplayBuilder().setContent(`**Lyrics — ${this.client.emoji.music} ${track.title}**\nby **${track.author}**`))
                                     .setThumbnailAccessory(new ThumbnailBuilder().setURL(thumb))
                             )
                             .addSeparatorComponents(new SeparatorBuilder().setDivider(true))

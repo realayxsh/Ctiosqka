@@ -69,6 +69,7 @@ test('the slash catalog covers enabled public commands, grouping filters and hid
 test('argument mapping preserves zero, optional checks, and customize subcommand order', () => {
     for (const [name, values, expected] of [
         ['volume', { level: 0 }, ['0']], ['seek', { position: 0 }, ['0']],
+        ['skip', { position: 3 }, ['3']], ['skip', {}, []],
         ['play', { query: 'a song with spaces' }, ['a song with spaces']],
         ['loop', { type: 'off' }, ['off']], ['loop', {}, []],
         ['profile', { user: '123' }, ['123']], ['setprefix', {}, []],

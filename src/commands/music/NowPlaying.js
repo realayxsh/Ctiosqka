@@ -23,7 +23,7 @@ function buildContainer(client, track, player, brandIcon) {
             new SectionBuilder()
                 .addTextDisplayComponents(
                     new TextDisplayBuilder().setContent(
-                        `**${client.emoji.nowplaying || client.emoji.music} | Now Playing**\n\n**[${track.title}](${track.uri || client.config.server})**\n\n${bar}\n\`${ms(position)} / ${ms(duration)}\`\n\n${client.emoji.users} **Requester:** ${track.requester}\n${client.emoji.music} **Loop:** ${loopMode}\n${client.emoji.ping} **Volume:** ${player.volume}%`
+                        `**${client.emoji.nowplaying || client.emoji.music} | Now Playing**\n\n${client.emoji.music} **[${track.title}](${track.uri || client.config.server})**\n\n${bar}\n\`${ms(position)} / ${ms(duration)}\`\n\n${client.emoji.users} **Requester:** ${track.requester}\n${client.emoji.music} **Loop:** ${loopMode}\n${client.emoji.ping} **Volume:** ${player.volume}%`
                     )
                 )
                 .setThumbnailAccessory(
