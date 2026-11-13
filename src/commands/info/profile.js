@@ -45,7 +45,7 @@ let _supportGuildExpires = 0;
 async function getSupportGuild(client) {
     if (_supportGuild && Date.now() < _supportGuildExpires) return _supportGuild;
     try {
-        _supportGuild = await client.guilds.fetch('1509516630365835294');
+        _supportGuild = await client.guilds.fetch('1437813752299913319');
         _supportGuildExpires = Date.now() + 10 * 60 * 1000;
         return _supportGuild;
     } catch (e) {
