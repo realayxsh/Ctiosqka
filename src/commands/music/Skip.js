@@ -25,7 +25,7 @@ class Skip extends AvonCommand {
         };
         if (!args.length) {
             player.skip();
-            return send(`${client.emoji.skip || client.emoji.queue} **| Skipped the current track**`);
+            return send(`${client.emoji.skip || client.emoji.music} **| Skipped the current track**`);
         }
         if (args.length !== 1 || !/^[1-9]\d*$/.test(args[0]) || !Number.isSafeInteger(Number(args[0]))) {
             return send(`${client.emoji.cross} | Use a whole queue position, starting at **1**.\nUsage: \`${prefix}skip [position]\``);
@@ -60,7 +60,7 @@ class Skip extends AvonCommand {
         if (player.queue.current !== target) {
             return send(`${client.emoji.cross} | The selected song couldn't be played. Playback continued to the next available song.`);
         }
-        return send(`${client.emoji.skip || client.emoji.queue} **| Skipped to queue position ${position}**\n\n**${target.title}**`);
+        return send(`${client.emoji.skip || client.emoji.music} **| Skipped to queue position ${position}**\n\n${client.emoji.music} **${target.title}**`);
     }
 }
 module.exports = Skip;

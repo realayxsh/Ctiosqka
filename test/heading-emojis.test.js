@@ -58,28 +58,24 @@ test('both song and playlist queue additions use the configured queue emoji', ()
     assert.equal(play.split('**${client.emoji.queue} | Added Playlist to Queue**').length - 1, 2);
 });
 
-test('OFJxMUSIC belongs on Now Playing; other displays use contextual icons without duplicate title icons', () => {
+test('song and playlist titles use the centrally configured OFJxMUSIC emoji', () => {
     assert.match(emojis.music, /^<a?:OFJxMUSIC:\d+>$/);
     const expectations = [
         ['src/events/poru/TrackStart.js', '${this.client.emoji.music} **[${track.title}]'],
         ['src/events/client/AvonInteractions.js', '${client.emoji.music} **[${track.title}]'],
         ['src/commands/music/NowPlaying.js', '${client.emoji.music} **[${track.title}]'],
         ['src/commands/music/Queue.js', '${client.emoji.music} [${player.queue.current.title}]'],
-        ['src/commands/music/Queue.js', '${client.emoji.queue} **Coming Up**'],
-        ['src/commands/music/Skip.js', '${client.emoji.skip || client.emoji.queue} **| Skipped'],
-        ['src/commands/music/Lyrics.js', "${client.emoji.lyrics || '📝'} **Lyrics — ${track.title}**"],
-        ['src/events/client/AvonInteractions.js', "${this.client.emoji.lyrics || '📝'} **Lyrics — ${track.title}**"],
+        ['src/commands/music/Queue.js', '${client.emoji.music} [${track.title.substring(0, 45)}]'],
+        ['src/commands/music/Play.js', '${client.emoji.music} [${result.tracks[0].title}]'],
+        ['src/commands/music/Play.js', '${client.emoji.music} [${track.title}]'],
+        ['src/commands/music/Play.js', '${client.emoji.music} *${result.playlistName}*'],
+        ['src/commands/music/Skip.js', '${client.emoji.music} **${target.title}**'],
+        ['src/commands/music/Lyrics.js', 'Lyrics — ${client.emoji.music} ${track.title}'],
+        ['src/events/client/AvonInteractions.js', 'Lyrics — ${this.client.emoji.music} ${track.title}'],
     ];
     for (const [file, snippet] of expectations) {
-        assert(sources.find(source => source.file === file).content.includes(snippet), `Missing contextual emoji in ${file}`);
+        assert(sources.find(source => source.file === file).content.includes(snippet), `Missing song title emoji in ${file}`);
     }
-    for (const file of ['src/commands/music/Play.js', 'src/commands/music/Skip.js', 'src/commands/music/Lyrics.js']) {
-        const content = sources.find(source => source.file === file).content;
-        assert(!/\$\{client\.emoji\.music\} [*[]/.test(content), `Unnecessary music title emoji in ${file}`);
-    }
-    const queue = sources.find(source => source.file === 'src/commands/music/Queue.js').content;
-    assert(!queue.includes('${client.emoji.music} [${track.title.substring'));
-    assert(Object.hasOwn(emojis, 'lyrics'));
 });
 
 test('nowplaying emoji is configured centrally and retained during message updates', () => {

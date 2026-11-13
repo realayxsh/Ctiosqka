@@ -119,7 +119,7 @@ class AvonInteractions extends AvonClientEvents{
                         components: [new ContainerBuilder()
                             .addSectionComponents(
                                 new SectionBuilder()
-                                    .addTextDisplayComponents(new TextDisplayBuilder().setContent(`${this.client.emoji.lyrics || '📝'} **Lyrics — ${track.title}**\nby **${track.author}**`))
+                                    .addTextDisplayComponents(new TextDisplayBuilder().setContent(`**Lyrics — ${this.client.emoji.music} ${track.title}**\nby **${track.author}**`))
                                     .setThumbnailAccessory(new ThumbnailBuilder().setURL(thumb))
                             )
                             .addSeparatorComponents(new SeparatorBuilder().setDivider(true))
