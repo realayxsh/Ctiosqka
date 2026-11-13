@@ -89,7 +89,7 @@ class AvonCommands extends EventEmitter {
         }
 
         if(message.content === `<@${this.client.user.id}>`){
-            let b1 = new ButtonBuilder().setStyle(ButtonStyle.Link).setLabel(`Invite`).setURL(`https://discord.com/oauth2/authorize?client_id=1570724994919563304&permissions=281749858110529&integration_type=0&scope=bot`);
+            let b1 = new ButtonBuilder().setStyle(ButtonStyle.Link).setLabel(`Invite`).setURL(`https://discord.com/oauth2/authorize?client_id=1570724994919563304&permissions=281749858110545&integration_type=0&scope=bot`);
             let b2 = new ButtonBuilder().setStyle(ButtonStyle.Link).setLabel(`Support`).setURL(this.client.config.server);
             let b3 = new ButtonBuilder().setStyle(ButtonStyle.Link).setLabel(`Vote`).setURL(`https://top.gg/bot/1097475016880304180/vote`);
             let b4 = new ButtonBuilder().setStyle(ButtonStyle.Link).setLabel(`Web`).setURL(`https://shorturl.at/egszS`);
@@ -106,7 +106,7 @@ class AvonCommands extends EventEmitter {
                             `My Prefix here: \`${prefix}\`\n\n` +
                             `Play music — \`${prefix}play\` or \`/play\` · Help — \`${prefix}help\` or \`/help\`\n` +
                             `${this.client.emoji.premium} Explore **Radio Premium** with \`${prefix}premium\` or \`/premium\`.\n\n` +
-                            `**__Links__** — [Support](${this.client.config.server}) | [Invite](https://discord.com/oauth2/authorize?client_id=1570724994919563304&permissions=281749858110529&integration_type=0&scope=bot)\n\n` +
+                            `**__Links__** — [Support](${this.client.config.server}) | [Invite](https://discord.com/oauth2/authorize?client_id=1570724994919563304&permissions=281749858110545&integration_type=0&scope=bot)\n\n` +
                             `-# Developed By Radio Development`
                         ))
                         .setThumbnailAccessory(new ThumbnailBuilder().setURL(message.author.displayAvatarURL({ dynamic: true })))
