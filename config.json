@@ -1,4 +1,15 @@
 {
+  "logging": {
+    "enabled": true,
+    "webhooks": {
+      "join": { "enabled": true, "secret": "JOIN_LOG_WEBHOOK_URL" },
+      "leave": { "enabled": true, "secret": "LEAVE_LOG_WEBHOOK_URL" },
+      "command": { "enabled": true, "secret": "COMMAND_LOG_WEBHOOK_URL" },
+      "music": { "enabled": true, "secret": "MUSIC_LOG_WEBHOOK_URL" },
+      "error": { "enabled": true, "secret": "ERROR_LOG_WEBHOOK_URL" },
+      "system": { "enabled": true, "secret": "SYSTEM_LOG_WEBHOOK_URL" }
+    }
+  },
     "token": "",
     "clientId" : "1097475016880304180",
     "prefix" : "+",
@@ -21,7 +32,7 @@
     "mongourl6" : "mongodb+srv://ayxsh:ayxsh@cluster0.n3opc6g.mongodb.net/?appName=Cluster0",
     "nodes" : [
         {
-        "name": "Radio",
+        "name": "Miami",
         "url": "miami3.visihost.in:2503",
         "auth" : "youshallnotpass",
         "secure": false

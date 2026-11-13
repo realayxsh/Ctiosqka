@@ -23,7 +23,7 @@ class Seek extends AvonCommand {
         if (isNaN(secs) || secs < 0) return send(`${client.emoji.cross} **| Provide a valid number of seconds**`);
         if (!player.queue.current.isSeekable) return send(`${client.emoji.cross} **| This track is not seekable**`);
         player.seek(secs * 1000);
-        return send(`${client.emoji.tick} **| Seeked to ${secs}s**`);
+        return send(`${client.emoji.seek || client.emoji.music} **| Seeked to ${secs}s**`);
     }
 }
 module.exports = Seek;

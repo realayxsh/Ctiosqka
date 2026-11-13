@@ -1,5 +1,6 @@
 const { PermissionsBitField, ContainerBuilder, TextDisplayBuilder, MessageFlags } = require("discord.js");
 const AvonClientEvent = require("../../structures/Eventhandler");
+const wh = require('../../structures/webhook');
 
 const recreateCooldown = new Map();
 const COOLDOWN_MS = 15000;
@@ -7,6 +8,7 @@ const COOLDOWN_MS = 15000;
 class PlayerDestroy extends AvonClientEvent{
     get name(){ return 'playerDestroy' }
     async run(player){
+        wh.music('Player destroyed', player);
         try{ player.data.get('music').delete() } catch(e) { }
         let guild = this.client.guilds.cache.get(player.guildId);
         if(!guild) return;
@@ -37,7 +39,7 @@ class PlayerDestroy extends AvonClientEvent{
                         shardId: guild.shardId
                     });
                     const container = new ContainerBuilder()
-                        .addTextDisplayComponents(new TextDisplayBuilder().setContent(`**| 247 player recreated**`));
+                        .addTextDisplayComponents(new TextDisplayBuilder().setContent(`**${this.client.emoji.mode247 || this.client.emoji.settings} | 247 player recreated**`));
                     return text.send({ flags: [MessageFlags.IsComponentsV2], components: [container] });
                 } catch(e){
                     this.client.data.set(`${guild.id}-247`, `disabled`);

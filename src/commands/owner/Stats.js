@@ -46,7 +46,7 @@ class Stats extends AvonCommand{
             const container = new ContainerBuilder()
                 .addSectionComponents(
                     new SectionBuilder()
-                        .addTextDisplayComponents(new TextDisplayBuilder().setContent(`**| ${client.user.username} Statistics**`))
+                        .addTextDisplayComponents(new TextDisplayBuilder().setContent(`**${client.emoji.info} | ${client.user.username} Statistics**`))
                         .setThumbnailAccessory(new ThumbnailBuilder().setURL(client.user.displayAvatarURL({ dynamic: true })))
                 )
                 .addSeparatorComponents(new SeparatorBuilder().setDivider(true))

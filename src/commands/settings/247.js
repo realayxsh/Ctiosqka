@@ -19,7 +19,7 @@ class twentyfourseven extends AvonCommand{
             return message.channel.send({ flags: [MessageFlags.IsComponentsV2], components: [container] });
         };
         if(!message.member.permissions.has(PermissionsBitField.Flags.ManageGuild) && !client.config.owners.includes(message.author.id)){
-            return send(`**| You are lacking permissions: Manage Guild**`);
+            return send(`**${client.emoji.cross} | You are lacking permissions: Manage Guild**`);
         }
         let data = await client.data.get(`${message.guild.id}-247`);
         if(!data) await client.data.set(`${message.guild.id}-247`, `disabled`);
@@ -27,15 +27,15 @@ class twentyfourseven extends AvonCommand{
             client.data.set(`${message.guild.id}-247`, `enabled`);
             client.data.set(`${message.guild.id}-text`, `${message.channel.id}`);
             client.data.set(`${message.guild.id}-voice`, `${message.member.voice.channelId}`);
-            return send(`**| Enabled 247 Mode of ${client.user.username}**`);
+            return send(`**${client.emoji.mode247 || client.emoji.settings} | Enabled 247 Mode of ${client.user.username}**`);
         } else if(data === `enabled`){
             client.data.set(`${message.guild.id}-247`, `disabled`);
             client.data.delete(`${message.guild.id}-text`);
             client.data.delete(`${message.guild.id}-voice`);
-            return send(`**| Disabled 247 Mode of ${client.user.username}**`);
+            return send(`**${client.emoji.mode247 || client.emoji.settings} | Disabled 247 Mode of ${client.user.username}**`);
         } else {
             client.data.set(`${message.guild.id}-247`, `disabled`);
-            return send(`**| Please try again running that command**`);
+            return send(`**${client.emoji.cross} | Please try again running that command**`);
         }
     }
 }

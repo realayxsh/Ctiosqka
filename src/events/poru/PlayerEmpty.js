@@ -1,10 +1,13 @@
 const delay = require("delay");
 const { ContainerBuilder, TextDisplayBuilder, SectionBuilder, ThumbnailBuilder, ButtonBuilder, ActionRowBuilder, ButtonStyle, MessageFlags } = require("discord.js");
 const AvonClientEvent = require("../../structures/Eventhandler");
+const wh = require('../../structures/webhook');
+const { continueAutoplay } = require('../../audio/autoplay');
 
 class PlayerEmpty extends AvonClientEvent{
     get name(){ return 'playerEmpty'; }
     async run(player){
+        wh.music('Queue empty', player);
         // Check 247 FIRST so we never show "Queue Concluded" while in 247 mode
         let data = await this.client.data.get(`${player.guildId}-247`);
         if(!data || data === null) this.client.data.set(`${player.guildId}-247`, `disabled`);
@@ -15,15 +18,19 @@ class PlayerEmpty extends AvonClientEvent{
 
         if(db === `enabled`){
             try {
-                const title = player.queue.previous?.title || player.queue.current?.title || 'popular music';
-                const result = await player.search(`${title}`, { engine: 'soundcloud', requester: this.client.user });
-                if(result && result.tracks.length){
-                    const track = result.tracks[Math.floor(Math.random() * Math.min(result.tracks.length, 5))];
-                    player.queue.add(track);
-                    player.play();
-                    return;
-                }
-            } catch(e) { console.error('[Autoplay]', e); }
+                if (await continueAutoplay(this.client, player)) return;
+            } catch(e) {
+                wh.error('Autoplay playback failed', e);
+                console.warn('[Autoplay] Could not start a recommendation');
+            }
+            const channel = this.client.channels.cache.get(player.textId) ||
+                await this.client.channels.fetch(player.textId).catch(() => null);
+            const container = new ContainerBuilder().addTextDisplayComponents(
+                new TextDisplayBuilder().setContent(
+                    `${this.client.emoji.autoplay || this.client.emoji.music} | Autoplay couldn't find a playable new song. Add a song with /play to continue.`
+                )
+            );
+            await channel?.send({ flags: [MessageFlags.IsComponentsV2], components: [container] }).catch(() => {});
         }
 
         // Only show "Queue Concluded" if NOT in 247 mode
@@ -35,7 +42,7 @@ class PlayerEmpty extends AvonClientEvent{
                 const container = new ContainerBuilder()
                     .addSectionComponents(
                         new SectionBuilder()
-                            .addTextDisplayComponents(new TextDisplayBuilder().setContent(`**| Queue Concluded**`))
+                            .addTextDisplayComponents(new TextDisplayBuilder().setContent(`**${this.client.emoji.queue} | Queue Concluded**`))
                             .setThumbnailAccessory(new ThumbnailBuilder().setURL(guild?.iconURL({ dynamic: true }) || this.client.user.displayAvatarURL()))
                     );
                 const row = new ActionRowBuilder().addComponents(
@@ -52,7 +59,7 @@ class PlayerEmpty extends AvonClientEvent{
         await delay(180000);
         let activePlayer = this.client.poru.players.get(player.guildId);
         if(!activePlayer) return;
-        if(activePlayer.isPlaying || activePlayer.queue.size > 0 || activePlayer.queue.current) return;
+        if(activePlayer !== player || activePlayer.playing || activePlayer.queue.size > 0 || activePlayer.queue.current) return;
         activePlayer.destroy().catch(() => {});
         let ch = this.client.channels.cache.get(player.textId);
         if(!ch){

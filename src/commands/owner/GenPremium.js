@@ -67,7 +67,7 @@ class GenPremium extends AvonCommand{
                 .addSectionComponents(
                     new SectionBuilder()
                         .addTextDisplayComponents(new TextDisplayBuilder().setContent(
-                            `**| Premium Codes Generated**\n\n` +
+                            `**${client.emoji.premium} | Premium Codes Generated**\n\n` +
                             `Generated **${generated.length}** code(s) • Validity: **${label}**\n\n` +
                             `${codeList}\n\n` +
                             `**Share these with server owners to activate premium.**\n\n` +

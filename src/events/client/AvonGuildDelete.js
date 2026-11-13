@@ -5,9 +5,11 @@ const wh = require('../../structures/webhook');
 class AvonGuildDelete extends AvonClientEvent{
     get name(){ return 'guildDelete'; }
     async run(guild){
-        this.client.data2.delete(`noprefix_${guild.id}`);
-        this.client.data.delete(`${guild.id}-247`);
-        this.client.data.delete(`${guild.id}-autoPlay`);
+        await Promise.all([
+            this.client.data2.delete(`noprefix_${guild.id}`),
+            this.client.data.delete(`${guild.id}-247`),
+            this.client.data.delete(`${guild.id}-autoPlay`),
+        ]).catch(error => wh.error('Server leave cleanup failed', error));
         console.log(`[GUILD] Left: ${guild.name} (${guild.id})`);
 
         const servers = await this.client.cluster.broadcastEval(c => c.guilds.cache.size).then(r => r.reduce((a,b)=>a+b,0)).catch(()=>0);
@@ -25,7 +27,7 @@ class AvonGuildDelete extends AvonClientEvent{
                 { name: `Total Users`,   value: `\`${users}\``,                                 inline: true  }
             )
             .setTimestamp();
-        wh.send(embed);
+        await wh.send(embed, 'leave');
     }
 }
 module.exports = AvonGuildDelete;

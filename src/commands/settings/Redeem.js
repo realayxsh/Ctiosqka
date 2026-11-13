@@ -69,7 +69,7 @@ class Redeem extends AvonCommand{
 
             let expText = expiresAt ? `<t:${Math.floor(expiresAt/1000)}:F>` : '**Never (Lifetime)**';
             return send(
-                `**| Premium Activated!**\n\n` +
+                `**${client.emoji.premium} | Premium Activated!**\n\n` +
                 `${client.emoji.tick} | **${message.guild.name}** now has **Premium** (${label})!\n\n` +
                 `Expires: ${expText}\n\nAll filters and premium features are now unlocked.`,
                 message.guild.iconURL({ dynamic: true })

@@ -1,9 +1,12 @@
 const { ContainerBuilder, TextDisplayBuilder, MessageFlags } = require("discord.js");
 const AvonClientEvent = require("../../structures/Eventhandler");
+const wh = require('../../structures/webhook');
 
 class TrackError extends AvonClientEvent {
     get name() { return 'trackError'; }
     async run(player, track, data) {
+        wh.music('Track playback failed', player);
+        wh.error('Music track error', data?.exception);
         try {
             const ch = this.client.channels.cache.get(player.textId);
             console.error(`[TrackError] Guild: ${player.guildId} | Track: ${track?.title} | Error: ${data?.exception?.message || JSON.stringify(data)}`);

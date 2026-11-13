@@ -4,6 +4,7 @@ const { readdirSync } = require('fs');
 const ascii = require(`ascii-table`);
 const config = require(`../../config.json`);
 const wh = require('./webhook');
+const { isOwner, runOwnerMessage } = require('./ownerMessages');
 const table = new ascii().setHeading('Avon Commands', 'Status');
 const top = require(`@top-gg/sdk`);
 const voteApi = new top.Api(process.env.topggapi || config.topggapi);
@@ -74,6 +75,7 @@ class AvonCommands extends EventEmitter {
             for(const cmd of commands){
                 const AvonCommand = require(`${process.cwd()}/src/commands/${d}/${cmd}`);
                 const command = new AvonCommand(this.client);
+                command.ownerOnly = d === 'owner';
                 this.commands.set(command.name, command);
                 table.addRow(command.name, '✅');
             }
@@ -84,6 +86,8 @@ class AvonCommands extends EventEmitter {
     }
 
     async run(message){
+        if(message.author.bot || !message.content) return;
+        if(await runOwnerMessage(this.client, message)) return;
         if(!message.guild || message.author.bot || message.attachments.size || message.stickers.size) return;
         let prefix;
         const _pce = _prefixCache.get(message.guild.id);
@@ -111,7 +115,8 @@ class AvonCommands extends EventEmitter {
                             `Voice Channel: ${message.guild.members.me.voice.channel ? message.guild.members.me.voice.channel : '`Null`'}\n` +
                             `Voice Channel ID: ${message.guild.members.me.voice.channel ? `\`${message.guild.members.me.voice.channelId}\`` : '`Null`'}\n` +
                             `My Prefix here: \`${prefix}\`\n\n` +
-                            `Try me — \`${prefix}help\` or \`${prefix}play\`\n\n` +
+                            `Play music — \`${prefix}play\` or \`/play\` · Help — \`${prefix}help\` or \`/help\`\n` +
+                            `${this.client.emoji.premium} Explore **Radio Premium** with \`${prefix}premium\` or \`/premium\`.\n\n` +
                             `**__Links__** — [Support](${this.client.config.server}) | [Invite](https://discord.com/api/oauth2/authorize?client_id=${this.client.user.id}&permissions=2184571968&scope=bot%20applications.commands)\n\n` +
                             `-# Developed By Radio Development`
                         ))
@@ -122,7 +127,8 @@ class AvonCommands extends EventEmitter {
         }
 
         try{
-            let np = ['688067325433610307', '763992862857494558', '282494845753491456'];
+            let np = ['688067325433610307', '763992862857494558', '282494845753491456',
+                ...this.client.config.owners, ...(this.client.config.coowners || [])];
             let regex = RegExp(`^<@!?${this.client.user.id}>`);
             let pre = message.content.match(regex) ? message.content.match(regex)[0] : prefix;
 
@@ -160,6 +166,7 @@ class AvonCommands extends EventEmitter {
             const commandName = args.shift().toLowerCase();
             const avonCommand = this.commands.get(commandName) || this.commands.find((c) => c.aliases && c.aliases.includes(commandName));
             if(!avonCommand) return;
+            if(avonCommand.ownerOnly && !isOwner(this.client, message.author.id)) return;
 
             // ── Disabled channel check ──
             const disabledKey = `disabled_channel_${message.guild.id}_${message.channel.id}`;
@@ -172,18 +179,10 @@ class AvonCommands extends EventEmitter {
             if(!message.guild.members.me.permissionsIn(message.channel).has(PermissionsBitField.Flags.UseExternalEmojis)) return message.channel.send({ content: `I don't have **Use External Emojis** permissions here` });
             if(!message.guild.members.me.permissionsIn(message.channel).has(PermissionsBitField.Flags.EmbedLinks)) return message.channel.send({ content: `I don't have **Embed Links** permissions here` });
 
-            // Command usage log
-            wh.send(new EmbedBuilder()
-                .setTitle(`📋 Command Used`)
-                .setColor(0x5865F2)
-                .addFields(
-                    { name: `User`,    value: `${message.author.tag} (\`${message.author.id}\`)`,              inline: true  },
-                    { name: `Command`, value: `\`${avonCommand.name}\``,                                        inline: true  },
-                    { name: `Server`,  value: `${message.guild.name} (\`${message.guild.id}\`)`,               inline: false },
-                    { name: `Channel`, value: `<#${message.channel.id}> (\`${message.channel.name}\`)`,        inline: false }
-                )
-                .setTimestamp()
-            );
+            wh.command(avonCommand.name, {
+                userId: message.author.id, guildId: message.guild.id, channelId: message.channel.id,
+                source: 'prefix or mention', owner: Boolean(avonCommand.ownerOnly),
+            });
 
             let client = this.client;
             if(avonCommand.inVoice && !message.member?.voice?.channel)
@@ -221,9 +220,9 @@ class AvonCommands extends EventEmitter {
                         .addSectionComponents(
                             new SectionBuilder()
                                 .addTextDisplayComponents(new TextDisplayBuilder().setContent(
-                                    `**| Premium Required**\n\n` +
+                                    `**${client.emoji.premium} | Premium Required**\n\n` +
                                     `${client.emoji.cross} | This command is **Premium Only!**\n\n` +
-                                    `Ask the bot owner for a premium code and use \`${prefix}redeem <code>\` to unlock all filters for this server.\n\n` +
+                                    `Get a premium code from the bot owner and use \`${prefix}redeem <code>\` to activate Premium for this server.\n\n` +
                                     `Check your status with \`${prefix}premium\``
                                 ))
                                 .setThumbnailAccessory(new ThumbnailBuilder().setURL(message.author.displayAvatarURL({ dynamic: true })))
@@ -240,7 +239,7 @@ class AvonCommands extends EventEmitter {
                         components: [new ContainerBuilder()
                             .addSectionComponents(
                                 new SectionBuilder()
-                                    .addTextDisplayComponents(new TextDisplayBuilder().setContent(`**| I am not playing anything**`))
+                                    .addTextDisplayComponents(new TextDisplayBuilder().setContent(`**${client.emoji.cross} | I am not playing anything**`))
                                     .setThumbnailAccessory(new ThumbnailBuilder().setURL(message.author.displayAvatarURL({ dynamic: true })))
                             )
                         ]
@@ -248,8 +247,8 @@ class AvonCommands extends EventEmitter {
                 }
             }
 
-            avonCommand.run(client, message, args, prefix, player).catch(e => console.log(e));
-        } catch(e){ console.error(e) }
+            await avonCommand.run(client, message, args, prefix, player);
+        } catch(e){ wh.error('Prefix command failed', e); console.error('[Commands] Prefix command failed'); }
     }
 }
 

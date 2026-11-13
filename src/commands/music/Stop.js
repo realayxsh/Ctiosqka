@@ -14,7 +14,7 @@ class Stop extends AvonCommand {
             .addSectionComponents(
                 new SectionBuilder()
                     .addTextDisplayComponents(
-                        new TextDisplayBuilder().setContent(`${client.emoji.tick} **| Destroyed the player**`)
+                        new TextDisplayBuilder().setContent(`${client.emoji.stop || client.emoji.music} **| Destroyed the player**`)
                     )
                     .setThumbnailAccessory(
                         new ThumbnailBuilder().setURL(message.author.displayAvatarURL({ dynamic: true }))

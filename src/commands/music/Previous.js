@@ -21,7 +21,7 @@ class Previous extends AvonCommand {
         if (player.queue.previous === null) return send(`${client.emoji.cross} **| No previous song available**`);
         player.queue.unshift(player.queue.previous);
         player.skip();
-        return send(`${client.emoji.tick} **| Playing previous track**`);
+        return send(`${client.emoji.previous || client.emoji.music} **| Playing previous track**`);
     }
 }
 module.exports = Previous;

@@ -32,7 +32,7 @@ class RevokePremium extends AvonCommand{
             let guildName = client.guilds.cache.get(guildId)?.name || guildId;
 
             return send(
-                `**| Premium Revoked**\n\n${client.emoji.tick} | Premium has been **removed** from **${guildName}**.\n\nServer ID: \`${guildId}\``,
+                `**${client.emoji.premium} | Premium Revoked**\n\n${client.emoji.tick} | Premium has been **removed** from **${guildName}**.\n\nServer ID: \`${guildId}\``,
                 message.author.displayAvatarURL({ dynamic: true })
             );
         } catch(e){ console.log(e) }

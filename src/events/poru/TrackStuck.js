@@ -1,9 +1,12 @@
 const { ContainerBuilder, TextDisplayBuilder, MessageFlags } = require("discord.js");
 const AvonClientEvent = require("../../structures/Eventhandler");
+const wh = require('../../structures/webhook');
 
 class TrackStuck extends AvonClientEvent {
     get name() { return 'trackStuck'; }
     async run(player, track, data) {
+        wh.music('Track stuck', player);
+        wh.error('Music track stuck', { name: 'PlaybackError' });
         try {
             const ch = this.client.channels.cache.get(player.textId);
             console.warn(`[TrackStuck] Guild: ${player.guildId} | Track: ${track?.title} | Threshold: ${data?.thresholdMs}ms`);

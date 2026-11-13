@@ -13,7 +13,7 @@ class Restart extends AvonCommand {
         const container = new ContainerBuilder()
             .addSectionComponents(
                 new SectionBuilder()
-                    .addTextDisplayComponents(new TextDisplayBuilder().setContent(`${client.emoji.tick} **| Restarted the currently playing song**`))
+                    .addTextDisplayComponents(new TextDisplayBuilder().setContent(`${client.emoji.restart || client.emoji.music} **| Restarted the currently playing song**`))
                     .setThumbnailAccessory(new ThumbnailBuilder().setURL(message.author.displayAvatarURL({ dynamic: true })))
             );
         return message.channel.send({ flags: [MessageFlags.IsComponentsV2], components: [container] });

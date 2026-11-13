@@ -23,23 +23,8 @@ class AvonVoiceStateUpdate extends AvonClientEvent {
             // Bot moved to a different channel — update player voiceId
             if (player && ns.channelId && ns.channelId !== os.channelId) {
                 player.voiceId = ns.channelId;
-                // Re-apply quality EQ after channel move since Lavalink may reset filters
-                if (player.data.get('qualityInit')) {
-                    const QUALITY_EQ = [
-                        { band: 0,  gain: -0.05 }, { band: 1,  gain:  0.00 }, { band: 2,  gain:  0.03 },
-                        { band: 3,  gain:  0.05 }, { band: 4,  gain:  0.04 }, { band: 5,  gain:  0.00 },
-                        { band: 6,  gain: -0.03 }, { band: 7,  gain:  0.00 }, { band: 8,  gain:  0.03 },
-                        { band: 9,  gain:  0.04 }, { band: 10, gain:  0.04 }, { band: 11, gain:  0.03 },
-                        { band: 12, gain:  0.02 }, { band: 13, gain:  0.02 },
-                    ];
-                    const anyFilterActive = player.data.get('8d') || player.data.get('bass') ||
-                        player.data.get('night') || player.data.get('vib') || player.data.get('trem') ||
-                        player.data.get('treble') || player.data.get('slow') || player.data.get('chip') ||
-                        player.data.get('china') || player.data.get('vapor') || player.data.get('dolbyatmos');
-                    if (!anyFilterActive) {
-                        player.shoukaku.setFilters({ equalizer: QUALITY_EQ }).catch(() => {});
-                    }
-                }
+                // The Lavalink player retains its selected filters across voice moves.
+                // Do not replace them with a separate quality EQ.
             }
             return;
         }

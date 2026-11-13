@@ -17,20 +17,20 @@ class Prefix extends AvonCommand{
                 );
             return message.channel.send({ flags: [MessageFlags.IsComponentsV2], components: [container] });
         };
-        if(!args[0]) return send(`**| My current prefix is** \`${prefix}\``);
+        if(!args[0]) return send(`**${client.emoji.settings} | My current prefix is** \`${prefix}\``);
         if(!message.member.permissions.has(PermissionsBitField.Flags.ManageGuild) && !client.config.owners.includes(message.author.id)){
-            return send(`**| You are lacking permissions: Manage Guild**`);
+            return send(`**${client.emoji.cross} | You are lacking permissions: Manage Guild**`);
         }
-        if(args[0].length > 3) return send(`**| Can't set a prefix having more than 3 characters**`);
-        if(args[1]) return send(`**| You can't use spaces in the prefix**`);
+        if(args[0].length > 3) return send(`**${client.emoji.cross} | Can't set a prefix having more than 3 characters**`);
+        if(args[1]) return send(`**${client.emoji.cross} | You can't use spaces in the prefix**`);
         if(args[0] === client.config.prefix){
             client.data.delete(`${message.guild.id}-prefix`);
             invalidatePrefixCache(message.guild.id);
-            return send(`**| Guild prefix has been reset**`);
+            return send(`**${client.emoji.settings} | Guild prefix has been reset**`);
         }
         client.data.set(`${message.guild.id}-prefix`, args[0]);
         invalidatePrefixCache(message.guild.id);
-        return send(`**| Guild's prefix has been set to** \`${args[0]}\``);
+        return send(`**${client.emoji.settings} | Guild's prefix has been set to** \`${args[0]}\``);
     }
 }
 module.exports = Prefix;

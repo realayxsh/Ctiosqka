@@ -91,7 +91,7 @@ class Noprefix extends AvonCommand{
                     let db = await client.data2.get(`noprefix_${client.user.id}`);
                     if(!db || db === null || db.length === 0) return await send(`${client.emoji.cross} | No users in all-server no prefix.`);
                     let lol = db.map((x, i) => `\`${i+1}\` <@${x}> | \`${x}\``);
-                    return await send(`**| All-Server No-Prefix List (${db.length})**\n\n${lol.join('\n')}`, message.author.displayAvatarURL({ dynamic: true }));
+                    return await send(`**${client.emoji.users} | All-Server No-Prefix List (${db.length})**\n\n${lol.join('\n')}`, message.author.displayAvatarURL({ dynamic: true }));
                 } else {
                     let guild;
                     try { guild = await client.guilds.fetch(args[1]); } catch(e) { return await send(`${client.emoji.cross} | Invalid server ID or bot is not in that server`); }
@@ -99,7 +99,7 @@ class Noprefix extends AvonCommand{
                     let db = await client.data2.get(`noprefix_${guild.id}`);
                     if(!db || db === null || db.length === 0) return await send(`${client.emoji.cross} | No users in **${guild.name}**'s no prefix`);
                     let lu = db.map((x, i) => `\`${i+1}\` <@${x}> | \`${x}\``);
-                    return await send(`**| ${guild.name}'s No-Prefix List (${db.length})**\n\n${lu.join('\n')}`, guild.iconURL({ dynamic: true }) || client.user.displayAvatarURL());
+                    return await send(`**${client.emoji.users} | ${guild.name}'s No-Prefix List (${db.length})**\n\n${lu.join('\n')}`, guild.iconURL({ dynamic: true }) || client.user.displayAvatarURL());
                 }
             }
 

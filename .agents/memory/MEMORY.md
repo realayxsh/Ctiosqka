@@ -1,1 +1,6 @@
-- [Lavalink setup](lavalink-setup.md) — Jirayu node (port 443, v4) is the only confirmed-working Lavalink from Replit; requires shoukaku@4 + kazagumo@3; filter API uses player.shoukaku.setFilters()
+- [Lavalink connectivity](lavalink-setup.md) — verify the configured node's actual WebSocket handshake before replacing it or assuming a port is blocked.
+- [Imported dependencies](imported-dependencies.md) — installed packages from an import may be incomplete even when their versions satisfy the manifest.
+- [Headphone spatial audio](headphone-spatial-audio.md) — the user expects left/right movement; keep spatial claims honest and preset changes consistent across controls.
+- [Slash and owner command scope](slash-owner-scope.md) — public commands use slash; owner commands stay message-only through no-prefix DMs or server mentions.
+- [Premium promotion](premium-promotion.md) — prioritize Premium over repeated filter menus and recommendations; keep filters available on request.
+- [Bot logging scope](logging-scope.md) — separate webhook destinations; joins/leaves mean bot server membership, not member events.

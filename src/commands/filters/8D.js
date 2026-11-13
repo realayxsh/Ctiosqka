@@ -1,5 +1,4 @@
-const { ContainerBuilder, TextDisplayBuilder, SectionBuilder, ThumbnailBuilder, MessageFlags } = require("discord.js");
-const AvonCommand = require("../../structures/avonCommand");
+const AvonCommand = require("../../structures/filterCommand");
 
 class Rotation extends AvonCommand {
     get name() { return '8d' }
@@ -9,29 +8,5 @@ class Rotation extends AvonCommand {
     get cat() { return 'filters' }
     get inVoice() { return true }
     get sameVoice() { return true }
-    async run(client, message, args, prefix, player) {
-        try {
-            const send = (text) => {
-                const container = new ContainerBuilder()
-                    .addSectionComponents(
-                        new SectionBuilder()
-                            .addTextDisplayComponents(new TextDisplayBuilder().setContent(text))
-                            .setThumbnailAccessory(new ThumbnailBuilder().setURL(message.author.displayAvatarURL({ dynamic: true })))
-                    );
-                return message.channel.send({ flags: [MessageFlags.IsComponentsV2], components: [container] });
-            };
-            let data = player.data.get('8d');
-            if (!data || data === false || data === undefined) {
-                await player.shoukaku.setFilters({ rotation: { rotationHz: 0.2 } });
-                player.data.set(`8d`, true);
-                return send(`${client.emoji.filters} **| Enabled 8D**`);
-            }
-            if (data === true) {
-                await player.shoukaku.setFilters({ rotation: null });
-                player.data.set(`8d`, false);
-                return send(`${client.emoji.cross} **| Disabled 8D**`);
-            }
-        } catch (e) { console.log(e) }
-    }
 }
 module.exports = Rotation;

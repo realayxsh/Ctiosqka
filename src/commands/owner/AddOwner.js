@@ -27,7 +27,7 @@ class AddOwner extends AvonCommand {
         if (alias === "listowners" || alias === "ownerlist") {
             if (!client.config.owners.length) return send(`${client.emoji.cross} | No owners found.`);
             const list = client.config.owners.map((id, i) => `\`${i + 1}\` <@${id}> | ${id}`).join("\n");
-            return send(`**| Bot Owners**\n\n${list}`);
+            return send(`**${client.emoji.owner} | Bot Owners**\n\n${list}`);
         }
 
         const userId = args[0]?.replace(/[<@!>]/g, "");

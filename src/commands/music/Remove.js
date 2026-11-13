@@ -25,7 +25,7 @@ class Remove extends AvonCommand {
         if (idx < 2) return send(`${client.emoji.cross} **| You cannot remove the currently playing song**`);
         if (idx > player.queue.length + 1) return send(`${client.emoji.cross} **| That position doesn't exist in the queue**`);
         player.queue.remove(idx - 1);
-        return send(`${client.emoji.tick} **| Removed the track**`);
+        return send(`${client.emoji.remove || client.emoji.queue} **| Removed the track**`);
     }
 }
 module.exports = Remove;

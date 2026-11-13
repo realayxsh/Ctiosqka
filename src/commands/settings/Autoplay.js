@@ -20,16 +20,12 @@ class autoPlay extends AvonCommand{
             return message.channel.send({ flags: [MessageFlags.IsComponentsV2], components: [container] });
         };
         let data = await client.data.get(`${message.guild.id}-autoPlay`);
-        if(!data) await client.data.set(`${message.guild.id}-autoPlay`, `disabled`);
-        if(data === `disabled`){
-            client.data.set(`${message.guild.id}-autoPlay`, `enabled`);
-            return send(`**| Enabled Autoplay Mode of ${client.user.username}**`);
+        if(data !== `enabled`){
+            await client.data.set(`${message.guild.id}-autoPlay`, `enabled`);
+            return send(`**${client.emoji.autoplay || client.emoji.music} | Enabled Autoplay Mode of ${client.user.username}**`);
         } else if(data === `enabled`){
-            client.data.set(`${message.guild.id}-autoPlay`, `disabled`);
-            return send(`**| Disabled Autoplay Mode of ${client.user.username}**`);
-        } else {
-            client.data.set(`${message.guild.id}-autoPlay`, `disabled`);
-            return send(`**| Please try again running that command**`);
+            await client.data.set(`${message.guild.id}-autoPlay`, `disabled`);
+            return send(`**${client.emoji.autoplay || client.emoji.music} | Disabled Autoplay Mode of ${client.user.username}**`);
         }
     }
 }

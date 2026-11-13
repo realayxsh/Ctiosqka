@@ -31,7 +31,7 @@ class NpList extends AvonCommand{
             const lines = globalDb.map((id, i) => `\`${i+1}\` <@${id}> | \`${id}\``);
 
             return send(
-                `**| Global No-Prefix List (${globalDb.length})**\n\n${lines.join('\n')}\n\n-# Use \`${prefix}noprefix remove <user_id> all\` to remove`,
+                `**${client.emoji.users} | Global No-Prefix List (${globalDb.length})**\n\n${lines.join('\n')}\n\n-# Use \`${prefix}noprefix remove <user_id> all\` to remove`,
                 message.author.displayAvatarURL({ dynamic: true })
             );
         } catch(e){ console.log('[NpList Error]', e.message, e.stack); }

@@ -13,7 +13,7 @@ class ClearQueue extends AvonCommand {
         const container = new ContainerBuilder()
             .addSectionComponents(
                 new SectionBuilder()
-                    .addTextDisplayComponents(new TextDisplayBuilder().setContent(`${client.emoji.tick} **| Successfully cleared the queue**`))
+                    .addTextDisplayComponents(new TextDisplayBuilder().setContent(`${client.emoji.clearqueue || client.emoji.queue} **| Successfully cleared the queue**`))
                     .setThumbnailAccessory(new ThumbnailBuilder().setURL(message.author.displayAvatarURL({ dynamic: true })))
             );
         return message.channel.send({ flags: [MessageFlags.IsComponentsV2], components: [container] });

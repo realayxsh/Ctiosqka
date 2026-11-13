@@ -34,7 +34,7 @@ class Play extends AvonCommand {
 
         try {
             if (!args[0]) {
-                return send(`**| Command Usage**\n\`\`\`js\n${prefix}play <songurl>\`\`\``);
+                return send(`**${client.emoji.info} | Command Usage**\n\`\`\`js\n${prefix}play <songurl>\`\`\``);
             }
 
             let query = args.join(" ");
@@ -50,7 +50,7 @@ class Play extends AvonCommand {
             const searchingContainer = new ContainerBuilder()
                 .addSectionComponents(
                     new SectionBuilder()
-                        .addTextDisplayComponents(new TextDisplayBuilder().setContent(`**| Searching...**\n\nLooking up: \`${query}\``))
+                        .addTextDisplayComponents(new TextDisplayBuilder().setContent(`**${client.emoji.search || client.emoji.music} | Searching...**\n\nLooking up: \`${query}\``))
                         .setThumbnailAccessory(new ThumbnailBuilder().setURL(avatar))
                 );
             let searchingMsg = await message.channel.send({ flags: [MessageFlags.IsComponentsV2], components: [searchingContainer] });
@@ -72,26 +72,26 @@ class Play extends AvonCommand {
 
             if (query.startsWith('https://')) {
                 if (!/(spotify|deezer|soundcloud)\./i.test(query)) {
-                    return editMsg(searchingMsg, `**| ${client.emoji.cross} | Only Spotify, Deezer, and SoundCloud links are supported.**`);
+                    return editMsg(searchingMsg, `**${client.emoji.cross} | Only Spotify, Deezer, and SoundCloud links are supported.**`);
                 }
 
                 try {
                     let result = await player.search(query, { requester: message.author });
                     if (!result || !result.tracks.length) {
-                        return editMsg(searchingMsg, `**| ${client.emoji.cross} | No results found for that Spotify link. Make sure it is valid and public.**`);
+                        return editMsg(searchingMsg, `**${client.emoji.cross} | No results found for that Spotify link. Make sure it is valid and public.**`);
                     }
                     if (result.type === `PLAYLIST`) {
                         for (let track of result.tracks) player.queue.add(track);
                         if (!player.playing && !player.paused) await player.play();
-                        return editMsg(searchingMsg, `**| Added Playlist to Queue**\n\n${client.emoji.queue} **Added** \`${result.tracks.length}\` songs from *${result.playlistName}*\n${client.emoji.users} **Requester:** ${message.author}\n${client.emoji.time} **Duration:** \`${ms(result.tracks.reduce((a, v) => a + (v.length || 0), 0))}\``);
+                        return editMsg(searchingMsg, `**${client.emoji.queue} | Added Playlist to Queue**\n\n${client.emoji.queue} **Added** \`${result.tracks.length}\` songs from *${result.playlistName}*\n${client.emoji.users} **Requester:** ${message.author}\n${client.emoji.time} **Duration:** \`${ms(result.tracks.reduce((a, v) => a + (v.length || 0), 0))}\``);
                     } else {
                         player.queue.add(result.tracks[0]);
                         if (!player.playing && !player.paused) await player.play();
-                        return editMsg(searchingMsg, `**| Added Song to Queue**\n\n${client.emoji.queue} **Added** [${result.tracks[0].title}](${result.tracks[0].uri || client.config.server})\n${client.emoji.users} **Requester:** ${message.author}\n${client.emoji.time} **Duration:** ${ms(result.tracks[0].length)}`);
+                        return editMsg(searchingMsg, `**${client.emoji.queue} | Added Song to Queue**\n\n${client.emoji.queue} **Added** [${result.tracks[0].title}](${result.tracks[0].uri || client.config.server})\n${client.emoji.users} **Requester:** ${message.author}\n${client.emoji.time} **Duration:** ${ms(result.tracks[0].length)}`);
                     }
                 } catch (e) {
                     console.error('[Play Spotify URL]', e);
-                    return editMsg(searchingMsg, `**| ${client.emoji.cross} | Failed to load that Spotify link. Make sure it is valid and public.**`);
+                    return editMsg(searchingMsg, `**${client.emoji.cross} | Failed to load that Spotify link. Make sure it is valid and public.**`);
                 }
             }
 
@@ -99,7 +99,7 @@ class Play extends AvonCommand {
                 .addSectionComponents(
                     new SectionBuilder()
                         .addTextDisplayComponents(
-                            new TextDisplayBuilder().setContent(`**| Choose the search engine**\n\nSearching for: \`${query}\``)
+                            new TextDisplayBuilder().setContent(`**${client.emoji.search || client.emoji.music} | Choose the search engine**\n\nSearching for: \`${query}\``)
                         )
                         .setThumbnailAccessory(new ThumbnailBuilder().setURL(avatar))
                 )
@@ -126,7 +126,7 @@ class Play extends AvonCommand {
                 try {
                     const player = client.poru.players.get(message.guild.id);
                     if (!player) {
-                        return editMsg(searchingMsg, `**| ${client.emoji.cross} | Player no longer exists. Please run the command again.**`);
+                        return editMsg(searchingMsg, `**${client.emoji.cross} | Player no longer exists. Please run the command again.**`);
                     }
 
                     const engines = {
@@ -137,7 +137,7 @@ class Play extends AvonCommand {
                     };
                     const selectedEngine = engines[interaction.customId];
                     if (!selectedEngine) {
-                        return editMsg(searchingMsg, `**| ${client.emoji.cross} | Unknown search engine. Please run the command again.**`);
+                        return editMsg(searchingMsg, `**${client.emoji.cross} | Unknown search engine. Please run the command again.**`);
                     }
                     const result = await player.search(query, {
                         ...(selectedEngine.engine ? { engine: selectedEngine.engine } : {}),
@@ -145,28 +145,28 @@ class Play extends AvonCommand {
                     });
 
                     if (!result?.tracks?.length) {
-                        return editMsg(searchingMsg, `**| ${client.emoji.cross} | No results found for \`${query}\` using ${selectedEngine.label}.**`);
+                        return editMsg(searchingMsg, `**${client.emoji.cross} | No results found for \`${query}\` using ${selectedEngine.label}.**`);
                     }
 
                     if (result.type === `PLAYLIST`) {
                         for (const track of result.tracks) player.queue.add(track);
                         if (!player.playing && !player.paused) await player.play();
-                        return editMsg(searchingMsg, `**| Added Playlist to Queue**\n\n${client.emoji.queue} **Added** \`${result.tracks.length}\` songs from *${result.playlistName}*\n${client.emoji.users} **Requester:** ${message.author}\n${client.emoji.time} **Duration:** \`${ms(result.tracks.reduce((total, track) => total + (track.length || 0), 0))}\``);
+                        return editMsg(searchingMsg, `**${client.emoji.queue} | Added Playlist to Queue**\n\n${client.emoji.queue} **Added** \`${result.tracks.length}\` songs from *${result.playlistName}*\n${client.emoji.users} **Requester:** ${message.author}\n${client.emoji.time} **Duration:** \`${ms(result.tracks.reduce((total, track) => total + (track.length || 0), 0))}\``);
                     }
 
                     const track = result.tracks[0];
                     player.queue.add(track);
                     if (!player.playing && !player.paused) await player.play();
-                    return editMsg(searchingMsg, `**| Added Song to Queue**\n\n${client.emoji.queue} **Added** [${track.title}](${track.uri || client.config.server})\n${client.emoji.users} **Requester:** ${message.author}\n${client.emoji.time} **Duration:** ${ms(track.length || 0)}`);
+                    return editMsg(searchingMsg, `**${client.emoji.queue} | Added Song to Queue**\n\n${client.emoji.queue} **Added** [${track.title}](${track.uri || client.config.server})\n${client.emoji.users} **Requester:** ${message.author}\n${client.emoji.time} **Duration:** ${ms(track.length || 0)}`);
                 } catch (error) {
                     console.error('[Play Search]', error);
-                    return editMsg(searchingMsg, `**| ${client.emoji.cross} | Search failed for that engine. Please try another engine or query.**`).catch(() => {});
+                    return editMsg(searchingMsg, `**${client.emoji.cross} | Search failed for that engine. Please try another engine or query.**`).catch(() => {});
                 }
             });
 
             collector.on('end', (collected, reason) => {
                 if (collected.size === 0 && reason === 'time') {
-                    editMsg(searchingMsg, `**| ${client.emoji.cross} | Search selection timed out. Run the command again.**`).catch(() => {});
+                    editMsg(searchingMsg, `**${client.emoji.cross} | Search selection timed out. Run the command again.**`).catch(() => {});
                 }
             });
 

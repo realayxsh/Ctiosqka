@@ -30,7 +30,7 @@ class ListPremium extends AvonCommand{
             if(list.length === 0) return send(`${client.emoji.cross} | No servers have premium active currently.`);
 
             return send(
-                `**| Premium Servers (${list.length})**\n\n${list.join('\n')}\n\n-# Use ${prefix}revokepremium <server_id> to remove premium`,
+                `**${client.emoji.premium} | Premium Servers (${list.length})**\n\n${list.join('\n')}\n\n-# Use ${prefix}revokepremium <server_id> to remove premium`,
                 message.author.displayAvatarURL({ dynamic: true })
             );
         } catch(e){ console.log(e) }

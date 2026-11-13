@@ -14,7 +14,7 @@ class Skip extends AvonCommand {
             .addSectionComponents(
                 new SectionBuilder()
                     .addTextDisplayComponents(
-                        new TextDisplayBuilder().setContent(`${client.emoji.tick} **| Skipped the current track**`)
+                        new TextDisplayBuilder().setContent(`${client.emoji.skip || client.emoji.music} **| Skipped the current track**`)
                     )
                     .setThumbnailAccessory(
                         new ThumbnailBuilder().setURL(message.author.displayAvatarURL({ dynamic: true }))

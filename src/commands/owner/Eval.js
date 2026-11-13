@@ -18,7 +18,7 @@ class Eval extends AvonCommand{
         if(!args[0]) return send(`${client.emoji.cross} | Provide me something to evaluate`);
 
         let ok;
-        let player = client.poru.players.get(message.guild.id);
+        let player = message.guild ? client.poru.players.get(message.guild.id) : undefined;
         try{
             ok = await eval(args.join(' '));
             ok = inspect(ok, { depth: 0 });

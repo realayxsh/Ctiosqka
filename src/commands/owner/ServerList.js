@@ -21,7 +21,7 @@ function buildPage(client, guilds, page) {
         .addSectionComponents(
             new SectionBuilder()
                 .addTextDisplayComponents(new TextDisplayBuilder().setContent(
-                    `**| Server List — ${guilds.length} total**`
+                    `**${client.emoji.servers} | Server List — ${guilds.length} total**`
                 ))
                 .setThumbnailAccessory(new ThumbnailBuilder().setURL(client.user.displayAvatarURL({ dynamic: true })))
         )

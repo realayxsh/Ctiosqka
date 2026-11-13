@@ -80,7 +80,7 @@ class Customize extends AvonCommand {
                 const banner = data.banner || null;
 
                 const text =
-                    `**| Bot Appearance — ${message.guild.name}**\n\n` +
+                    `**${client.emoji.customize || client.emoji.settings} | Bot Appearance — ${message.guild.name}**\n\n` +
                     `${em.customize_icon} **Icon:** ${icon   ? `[View](${icon})`   : '`Not set — using default bot avatar`'}\n` +
                     `${em.customize_banner} **Banner:** ${banner ? `[View](${banner})` : '`Not set`'}\n\n` +
                     `**How to customize:**\n` +
@@ -142,11 +142,11 @@ class Customize extends AvonCommand {
                 invalidateServerBrandCache(message.guild.id);
 
                 const resultText = applyError
-                    ? `**| Bot Icon — Partial Update**\n\n` +
+                    ? `**${client.emoji.customize_icon || client.emoji.settings} | Bot Icon — Partial Update**\n\n` +
                       `${em.customize_icon} | Icon URL saved for **${message.guild.name}**.\n` +
                       `${em.cross} | Could not apply to bot's server profile: \`${applyError}\`\n\n` +
                       `-# The icon will still appear in bot embeds on this server.`
-                    : `**| Bot Icon Updated**\n\n` +
+                    : `**${client.emoji.customize_icon || client.emoji.settings} | Bot Icon Updated**\n\n` +
                       `${em.customize_icon} | Custom icon applied to the bot's profile in **${message.guild.name}**!\n\n` +
                       `Click the bot in the member list to see it.\n\n` +
                       `-# ${em.customize_reset} Use \`${prefix}customize reset icon\` to remove it.`;
@@ -200,10 +200,10 @@ class Customize extends AvonCommand {
                 invalidateServerBrandCache(message.guild.id);
 
                 const resultText = applyError
-                    ? `**| Bot Banner — Failed**\n\n` +
+                    ? `**${client.emoji.customize_banner || client.emoji.settings} | Bot Banner — Failed**\n\n` +
                       `${em.cross} | Could not apply banner: \`${applyError}\`\n\n` +
                       `-# ${em.customize_reset} Use \`${prefix}customize reset banner\` to remove it.`
-                    : `**| Bot Banner Updated**\n\n` +
+                    : `**${client.emoji.customize_banner || client.emoji.settings} | Bot Banner Updated**\n\n` +
                       `${em.customize_banner} | Custom banner applied to the bot's profile in **${message.guild.name}**!\n\n` +
                       `-# ${em.customize_reset} Use \`${prefix}customize reset banner\` to remove it.`;
 
@@ -254,7 +254,7 @@ class Customize extends AvonCommand {
 
             // ── Unknown subcommand ──
             return send(
-                `**| Customize Bot Appearance**\n\n` +
+                `**${client.emoji.customize || client.emoji.settings} | Customize Bot Appearance**\n\n` +
                 `${em.cross} | Unknown option \`${sub}\`.\n\n` +
                 `**Available options:**\n` +
                 `${em.customize_view} \`${prefix}customize\` — View current server customization\n` +

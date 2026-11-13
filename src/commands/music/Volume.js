@@ -22,18 +22,17 @@ class Volume extends AvonCommand {
 
             let player = client.poru.players.get(message.guild.id);
             if (!player) return await send(`${client.emoji.cross} **| I am not playing anything**`);
-            if (!args[0]) return await send(`${client.emoji.music} **| Current volume: ${player.volume}%**`);
+            if (!args[0]) return await send(`${client.emoji.volume || client.emoji.music} **| Current volume: ${player.volume}%**`);
 
             let vol = Number(args[0]);
             if (isNaN(vol) || vol < 0 || vol > 200) return await send(`${client.emoji.cross} **| Volume must be between 0 and 200**`);
             if (player.volume === vol) return await send(`${client.emoji.cross} **| Volume is already set to ${vol}%**`);
 
-            const currentFilters = Object.assign({}, player.shoukaku.filters || {});
-            currentFilters.volume = vol / 100;
-            await player.shoukaku.setFilters(currentFilters);
-            player.volume = vol;
+            // Use the native player volume once. Filter volume is preset headroom,
+            // not a second copy of the user's volume percentage.
+            await player.setVolume(vol);
 
-            return await send(`${client.emoji.tick} **| Volume set to ${vol}%**`);
+            return await send(`${client.emoji.volume || client.emoji.music} **| Volume set to ${vol}%**`);
         } catch (e) { console.log('[Volume Error]', e.message); }
     }
 }

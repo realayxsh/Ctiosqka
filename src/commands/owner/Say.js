@@ -37,7 +37,7 @@ class Say extends AvonCommand {
 
         if (!args[0]) {
             return send(
-                `**| Say Command — Usage**\n\n` +
+                `**${client.emoji.info} | Say Command — Usage**\n\n` +
                 `**Server channel:**\n\`${prefix}say #channel <message>\`\n\n` +
                 `**DM a user:**\n\`${prefix}say dm @user <message>\` or \`${prefix}say dm <userID> <message>\``
             );
@@ -45,19 +45,19 @@ class Say extends AvonCommand {
 
         if (args[0].toLowerCase() === "dm") {
             const rawUser = args[1];
-            if (!rawUser) return send(`**| ${client.emoji.cross} | Please mention a user or provide their ID.**`);
+            if (!rawUser) return send(`**${client.emoji.cross} | Please mention a user or provide their ID.**`);
 
             const userId = rawUser.replace(/[<@!>]/g, "");
-            if (isNaN(userId)) return send(`**| ${client.emoji.cross} | Invalid user ID.**`);
+            if (isNaN(userId)) return send(`**${client.emoji.cross} | Invalid user ID.**`);
 
             const msgText = args.slice(2).join(" ");
-            if (!msgText) return send(`**| ${client.emoji.cross} | Please provide a message to send.**`);
+            if (!msgText) return send(`**${client.emoji.cross} | Please provide a message to send.**`);
 
             let targetUser;
             try {
                 targetUser = await client.users.fetch(userId);
             } catch {
-                return send(`**| ${client.emoji.cross} | Could not find that user.**`);
+                return send(`**${client.emoji.cross} | Could not find that user.**`);
             }
 
             const dmContainer = new ContainerBuilder()
@@ -65,9 +65,9 @@ class Say extends AvonCommand {
 
             try {
                 await targetUser.send({ flags: [MessageFlags.IsComponentsV2], components: [dmContainer] });
-                return send(`**| ${client.emoji.tick} | Message sent to ${targetUser.tag} via DM.**`);
+                return send(`**${client.emoji.tick} | Message sent to ${targetUser.tag} via DM.**`);
             } catch {
-                return send(`**| ${client.emoji.cross} | Could not DM ${targetUser.tag}. Their DMs may be closed.**`);
+                return send(`**${client.emoji.cross} | Could not DM ${targetUser.tag}. Their DMs may be closed.**`);
             }
         }
 
@@ -79,20 +79,20 @@ class Say extends AvonCommand {
         }
 
         if (!targetChannel || targetChannel.type === ChannelType.DM) {
-            return send(`**| ${client.emoji.cross} | Invalid channel. Mention a valid server channel or use \`dm\` for DMs.**`);
+            return send(`**${client.emoji.cross} | Invalid channel. Mention a valid server channel or use \`dm\` for DMs.**`);
         }
 
         const msgText = args.slice(1).join(" ");
-        if (!msgText) return send(`**| ${client.emoji.cross} | Please provide a message to send.**`);
+        if (!msgText) return send(`**${client.emoji.cross} | Please provide a message to send.**`);
 
         const sayContainer = new ContainerBuilder()
             .addTextDisplayComponents(new TextDisplayBuilder().setContent(msgText));
 
         try {
             await targetChannel.send({ flags: [MessageFlags.IsComponentsV2], components: [sayContainer] });
-            return send(`**| ${client.emoji.tick} | Message sent to <#${targetChannel.id}>.**`);
+            return send(`**${client.emoji.tick} | Message sent to <#${targetChannel.id}>.**`);
         } catch {
-            return send(`**| ${client.emoji.cross} | I don't have permission to send messages in <#${targetChannel.id}>.**`);
+            return send(`**${client.emoji.cross} | I don't have permission to send messages in <#${targetChannel.id}>.**`);
         }
     }
 }

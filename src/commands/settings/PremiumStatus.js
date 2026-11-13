@@ -26,9 +26,10 @@ class PremiumStatus extends AvonCommand{
                     .addSectionComponents(
                         new SectionBuilder()
                             .addTextDisplayComponents(new TextDisplayBuilder().setContent(
-                                `**| Premium Status**\n\n` +
+                                `**${client.emoji.premium} | Premium Status**\n\n` +
                                 `${client.emoji.tick} | **${message.guild.name}** has **Premium** active!\n\n` +
-                                `${expLine}\n\nAll filters are unlocked and available.\n\n` +
+                                `${expLine}\n\nEnjoy premium audio presets and a custom bot icon and banner for your server.\n` +
+                                `Use \`/customize\` to personalize your server's experience.\n\n` +
                                 `-# Thank you for supporting us!`
                             ))
                             .setThumbnailAccessory(new ThumbnailBuilder().setURL(message.guild.iconURL({ dynamic: true }) || client.user.displayAvatarURL()))
@@ -42,16 +43,17 @@ class PremiumStatus extends AvonCommand{
                     .addSectionComponents(
                         new SectionBuilder()
                             .addTextDisplayComponents(new TextDisplayBuilder().setContent(
-                                `**| Premium Status**\n\n` +
+                                `**${client.emoji.premium} | Premium Status**\n\n` +
                                 `${client.emoji.cross} | **${message.guild.name}** does not have **Premium**.\n\n` +
                                 `**Premium Unlocks:**\n` +
-                                `${client.emoji.filters || '🎛️'} All audio filters (BassBoost, Nightcore, 8D, etc.)\n\n` +
+                                `${client.emoji.premium} Custom bot icon and banner for your server\n` +
+                                `${client.emoji.music} Access to premium audio presets\n\n` +
                                 `Contact the bot owner to get a premium code, then use \`${prefix}redeem <code>\`.`
                             ))
                             .setThumbnailAccessory(new ThumbnailBuilder().setURL(message.guild.iconURL({ dynamic: true }) || client.user.displayAvatarURL()))
                     );
                 const row = new ActionRowBuilder().addComponents(
-                    new ButtonBuilder().setStyle(ButtonStyle.Link).setLabel(`Support Server`).setURL(client.config.server),
+                    new ButtonBuilder().setStyle(ButtonStyle.Link).setLabel(`Get Premium`).setURL(client.config.server),
                     new ButtonBuilder().setStyle(ButtonStyle.Success).setCustomId(`redeem_prompt`).setLabel(`Redeem Code`)
                 );
 

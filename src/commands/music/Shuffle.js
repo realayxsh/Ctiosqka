@@ -11,7 +11,7 @@ class Shuffle extends AvonCommand {
     async run(client, message, args, prefix, player) {
         const text = !player.queue.length
             ? `${client.emoji.cross} **| No queue available to shuffle**`
-            : `${client.emoji.tick} **| Shuffled the queue**`;
+            : `${client.emoji.shuffle || client.emoji.queue} **| Shuffled the queue**`;
         if (player.queue.length) player.queue.shuffle();
         const container = new ContainerBuilder()
             .addSectionComponents(

@@ -9,7 +9,7 @@ class Resume extends AvonCommand {
     get inVoice() { return true }
     get sameVoice() { return true }
     async run(client, message, args, prefix, player) {
-        const text = !player.paused ? `${client.emoji.cross} **| Player is already resumed**` : `${client.emoji.tick} **| Resumed the player**`;
+        const text = !player.paused ? `${client.emoji.cross} **| Player is already resumed**` : `${client.emoji.resume || client.emoji.music} **| Resumed the player**`;
         if (player.paused) player.pause(false);
         const container = new ContainerBuilder()
             .addSectionComponents(

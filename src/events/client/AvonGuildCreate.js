@@ -6,9 +6,11 @@ class AvonGuildCreate extends AvonClientEvent{
     get name(){ return 'guildCreate' }
     async run(guild){
         try{
-            this.client.data.set(`${guild.id}-247`, `disabled`);
-            this.client.data.set(`${guild.id}-autoPlay`, `disabled`);
-            this.client.data2.set(`noprefix_${guild.id}`, []);
+            await Promise.all([
+                this.client.data.set(`${guild.id}-247`, `disabled`),
+                this.client.data.set(`${guild.id}-autoPlay`, `disabled`),
+                this.client.data2.set(`noprefix_${guild.id}`, []),
+            ]).catch(error => wh.error('Server join defaults failed', error));
             console.log(`[GUILD] Joined: ${guild.name} (${guild.id}) | Members: ${guild.memberCount}`);
 
             let owner = await guild?.fetchOwner().catch(() => null);
@@ -24,8 +26,8 @@ class AvonGuildCreate extends AvonClientEvent{
                     { name: `Total Servers`,value: `\`${this.client.guilds.cache.size}\``,                      inline: true  }
                 )
                 .setTimestamp();
-            wh.send(embed);
-        } catch(e){ console.log(e) }
+            await wh.send(embed, 'join');
+        } catch(e){ wh.error('Bot server join event failed', e); }
     }
 }
 module.exports = AvonGuildCreate;
