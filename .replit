@@ -2,14 +2,14 @@
 hidden = [".config", "package-lock.json"]
 run = "node src/sharding.js"
 entrypoint = "index.js"
-modules = ["nodejs-20:v8-20230920-bd784b9"]
+modules = ["nodejs-20", "nix"]
 
 [[hints]]
 regex = "Error \\[ERR_REQUIRE_ESM\\]"
 message = "We see that you are using require(...) inside your code. We currently do not support this syntax. Please use 'import' instead when using external modules. (https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Statements/import)"
 
 [nix]
-channel = "stable-22_11"
+channel = "stable-25_05"
 
 [env]
 XDG_CONFIG_HOME = "/home/runner/$REPL_SLUG/.config"
