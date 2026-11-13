@@ -87,7 +87,7 @@ class Lyrics extends AvonCommand {
         const loadMsg = await message.channel.send({
             flags: [MessageFlags.IsComponentsV2],
             components: [new ContainerBuilder().addTextDisplayComponents(
-                new TextDisplayBuilder().setContent(`${client.emoji.music} Searching lyrics for **${title}**...`)
+                new TextDisplayBuilder().setContent(`${client.emoji.lyrics || '📝'} Searching lyrics for **${title}**...`)
             )]
         });
 
@@ -125,7 +125,7 @@ class Lyrics extends AvonCommand {
                     .addSectionComponents(
                         new SectionBuilder()
                             .addTextDisplayComponents(
-                                new TextDisplayBuilder().setContent(`**Lyrics — ${client.emoji.music} ${track.title}**\nby **${track.author}**`)
+                                new TextDisplayBuilder().setContent(`${client.emoji.lyrics || '📝'} **Lyrics — ${track.title}**\nby **${track.author}**`)
                             )
                             .setThumbnailAccessory(new ThumbnailBuilder().setURL(thumb))
                     )

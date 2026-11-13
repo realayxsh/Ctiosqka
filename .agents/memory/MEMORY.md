@@ -6,3 +6,4 @@
 - [Bot logging scope](logging-scope.md) — separate webhook destinations; joins/leaves mean bot server membership, not member events.
 - [Voting availability](voting-availability.md) — voting is temporarily hidden and disabled; retain it for reactivation when the user requests it.
 - [Spotify link loading](spotify-link-loading.md) — empty plugin results may hide API/schema failures; verify native node resolution before blaming a public link.
+- [Contextual embed emojis](embed-emoji-usage.md) — OFJxMUSIC was chosen for Now Playing, not a blanket icon for every title; use relevant icons elsewhere.
