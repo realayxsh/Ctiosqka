@@ -7,8 +7,10 @@ class Help extends AvonCommand{
     get cat(){ return 'info'; }
     async run(client, message, args, prefix){
         const textPrefix = prefix || client.config.prefix;
-        prefix = '/';
-        const slashUsage = command => command.cat === 'filters' ? '/filter effect:' + command.name : '/' + command.name;
+        const commandName = command => command.name;
+        const usageNote = `**Two ways to use commands**\n` +
+            `**Prefix:** \`${textPrefix}\`  •  **Slash:** \`/\`\n` +
+            `Type the prefix before a command name, or use Discord's slash command menu.`;
         try{
             let musicCmds  = client.AvonCommands.commands.filter(x => x.cat && x.cat === `music`);
             let filterCmds = client.AvonCommands.commands.filter(x => x.cat && x.cat === `filters`);
@@ -39,10 +41,11 @@ class Help extends AvonCommand{
                     new SectionBuilder()
                         .addTextDisplayComponents(new TextDisplayBuilder().setContent(
                             `**${client.user.username} HelpDesk**\n\n` +
-                            `Hey ${message.author} I am **${client.user.username}**\n` +
-                            `${client.emoji.arrow} Play music with \`${textPrefix}play\` or \`/play\`.\n\n` +
+                            `Hey ${message.author} I am **${client.user.username}**\n\n` +
+                            `${usageNote}\n\n` +
+                            `${client.emoji.arrow} Start listening with \`play\`.\n\n` +
                             `${client.emoji.premium} **Radio Premium** — custom server branding and premium audio presets.\n` +
-                            `Explore \`${textPrefix}premium\` or \`/premium\`, or select **Premium** below.\n\n` +
+                            `Explore \`premium\`, or select **Premium** below.\n\n` +
                             `${client.emoji.arrow} [Invite](https://discord.com/api/oauth2/authorize?client_id=${client.user.id}&permissions=2184571968&scope=bot%20applications.commands) | [Support](${client.config.server}) | [Vote](https://top.gg/bot/1097475016880304180/vote)`
                         ))
                         .setThumbnailAccessory(new ThumbnailBuilder().setURL(client.user.displayAvatarURL({ dynamic: true })))
@@ -63,81 +66,83 @@ class Help extends AvonCommand{
             const c1 = new ContainerBuilder()
                 .addSectionComponents(
                     new SectionBuilder()
-                        .addTextDisplayComponents(new TextDisplayBuilder().setContent(`${client.emoji.music} **Music Commands**`))
+                        .addTextDisplayComponents(new TextDisplayBuilder().setContent(`${client.emoji.music} **Music Commands**\n\n${usageNote}`))
                         .setThumbnailAccessory(new ThumbnailBuilder().setURL(client.user.displayAvatarURL({ dynamic: true })))
                 )
                 .addSeparatorComponents(new SeparatorBuilder().setDivider(true))
                 .addTextDisplayComponents(new TextDisplayBuilder().setContent(
-                    musicCmds.sort((a,b) => a.name.localeCompare(b.name)).map(r => `${client.emoji.music} \`${slashUsage(r)}\``).join(`\n`) || 'None'
+                    musicCmds.sort((a,b) => a.name.localeCompare(b.name)).map(r => `${client.emoji.music} \`${commandName(r)}\``).join(`\n`) || 'None'
                 ));
 
             const c2 = new ContainerBuilder()
                 .addSectionComponents(
                     new SectionBuilder()
-                        .addTextDisplayComponents(new TextDisplayBuilder().setContent(`${client.emoji.filters} **Filter Commands**`))
+                        .addTextDisplayComponents(new TextDisplayBuilder().setContent(`${client.emoji.filters} **Filter Commands**\n\n${usageNote}`))
                         .setThumbnailAccessory(new ThumbnailBuilder().setURL(client.user.displayAvatarURL({ dynamic: true })))
                 )
                 .addSeparatorComponents(new SeparatorBuilder().setDivider(true))
                 .addTextDisplayComponents(new TextDisplayBuilder().setContent(
-                    filterCmds.sort((a,b) => a.name.localeCompare(b.name)).map(r => `${client.emoji.filters} \`${slashUsage(r)}\``).join(`\n`) || 'None'
+                    `Use \`filter\` in the slash menu to choose an effect, or run an effect name with your prefix.\n\n` +
+                    (filterCmds.sort((a,b) => a.name.localeCompare(b.name)).map(r => `${client.emoji.filters} \`${commandName(r)}\``).join(`\n`) || 'None')
                 ));
 
             const c3 = new ContainerBuilder()
                 .addSectionComponents(
                     new SectionBuilder()
-                        .addTextDisplayComponents(new TextDisplayBuilder().setContent(`**${client.emoji.settings} | Settings Commands**`))
+                        .addTextDisplayComponents(new TextDisplayBuilder().setContent(`**${client.emoji.settings} | Settings Commands**\n\n${usageNote}`))
                         .setThumbnailAccessory(new ThumbnailBuilder().setURL(client.user.displayAvatarURL({ dynamic: true })))
                 )
                 .addSeparatorComponents(new SeparatorBuilder().setDivider(true))
                 .addTextDisplayComponents(new TextDisplayBuilder().setContent(
-                    `**__Settings__ [${setCmds.size}]**\n${setCmds.map(r => `\`${slashUsage(r)}\``).sort().join(`, `) || 'None'}\n\n` +
+                    `**__Settings__ [${setCmds.size}]**\n${setCmds.map(r => `\`${commandName(r)}\``).sort().join(`, `) || 'None'}\n\n` +
                     `**__Details__**\n` +
-                    `\`${prefix}setprefix <prefix>\` — Change server prefix\n` +
-                    `\`${prefix}247\` — Toggle 24/7 voice mode\n` +
-                    `\`${prefix}autoplay\` — Toggle autoplay mode`
+                    `\`setprefix <prefix>\` — Change server prefix\n` +
+                    `\`247\` — Toggle 24/7 voice mode\n` +
+                    `\`autoplay\` — Toggle autoplay mode`
                 ));
 
             const c4 = new ContainerBuilder()
                 .addSectionComponents(
                     new SectionBuilder()
-                        .addTextDisplayComponents(new TextDisplayBuilder().setContent(`${client.emoji.info} **Information Commands**`))
+                        .addTextDisplayComponents(new TextDisplayBuilder().setContent(`${client.emoji.info} **Information Commands**\n\n${usageNote}`))
                         .setThumbnailAccessory(new ThumbnailBuilder().setURL(client.user.displayAvatarURL({ dynamic: true })))
                 )
                 .addSeparatorComponents(new SeparatorBuilder().setDivider(true))
                 .addTextDisplayComponents(new TextDisplayBuilder().setContent(
-                    infoCmds.sort((a,b) => a.name.localeCompare(b.name)).map(r => `${client.emoji.info} \`${slashUsage(r)}\``).join(`\n`) || 'None'
+                    infoCmds.sort((a,b) => a.name.localeCompare(b.name)).map(r => `${client.emoji.info} \`${commandName(r)}\``).join(`\n`) || 'None'
                 ));
 
             const c5 = new ContainerBuilder()
                 .addSectionComponents(
                     new SectionBuilder()
-                        .addTextDisplayComponents(new TextDisplayBuilder().setContent(`${client.emoji.allCommands} **All Commands**`))
+                        .addTextDisplayComponents(new TextDisplayBuilder().setContent(`${client.emoji.allCommands} **All Commands**\n\n${usageNote}`))
                         .setThumbnailAccessory(new ThumbnailBuilder().setURL(client.user.displayAvatarURL({ dynamic: true })))
                 )
                 .addSeparatorComponents(new SeparatorBuilder().setDivider(true))
                 .addTextDisplayComponents(new TextDisplayBuilder().setContent(
                     `${client.emoji.music} **Music [${musicCmds.size}]**\n` +
-                    musicCmds.sort((a,b) => a.name.localeCompare(b.name)).map(r => `\`${slashUsage(r)}\``).join(`  `)
+                    musicCmds.sort((a,b) => a.name.localeCompare(b.name)).map(r => `\`${commandName(r)}\``).join(`  `)
                 ))
                 .addSeparatorComponents(new SeparatorBuilder().setDivider(false))
                 .addTextDisplayComponents(new TextDisplayBuilder().setContent(
                     `${client.emoji.filters} **Filters [${filterCmds.size}]**\n` +
-                    `\`/filter\` — Choose an audio effect when you need one.`
+                    `\`filter\` — Choose an audio effect in the slash menu.\n` +
+                    filterCmds.sort((a,b) => a.name.localeCompare(b.name)).map(r => `\`${commandName(r)}\``).join(`  `)
                 ))
                 .addSeparatorComponents(new SeparatorBuilder().setDivider(false))
                 .addTextDisplayComponents(new TextDisplayBuilder().setContent(
                     `${client.emoji.settings} **Settings [${setCmds.size}]**\n` +
-                    setCmds.sort((a,b) => a.name.localeCompare(b.name)).map(r => `\`${slashUsage(r)}\``).join(`  `)
+                    setCmds.sort((a,b) => a.name.localeCompare(b.name)).map(r => `\`${commandName(r)}\``).join(`  `)
                 ))
                 .addSeparatorComponents(new SeparatorBuilder().setDivider(false))
                 .addTextDisplayComponents(new TextDisplayBuilder().setContent(
                     `${client.emoji.info} **Information [${infoCmds.size}]**\n` +
-                    infoCmds.sort((a,b) => a.name.localeCompare(b.name)).map(r => `\`${slashUsage(r)}\``).join(`  `)
+                    infoCmds.sort((a,b) => a.name.localeCompare(b.name)).map(r => `\`${commandName(r)}\``).join(`  `)
                 ))
                 .addSeparatorComponents(new SeparatorBuilder().setDivider(false))
                 .addTextDisplayComponents(new TextDisplayBuilder().setContent(
                     `${client.emoji.premium} **Premium [${premCmds.size + 1}]**\n` +
-                    [...premCmds.sort((a,b) => a.name.localeCompare(b.name)).map(r => `\`${slashUsage(r)}\``), `\`/customize\``].join(`  `)
+                    [...premCmds.sort((a,b) => a.name.localeCompare(b.name)).map(r => `\`${commandName(r)}\``), `\`customize\``].join(`  `)
                 ))
                 .addSeparatorComponents(new SeparatorBuilder().setDivider(true))
                 .addTextDisplayComponents(new TextDisplayBuilder().setContent(`-# Developed By Radio Development`));
@@ -145,21 +150,21 @@ class Help extends AvonCommand{
             const c6 = new ContainerBuilder()
                 .addSectionComponents(
                     new SectionBuilder()
-                        .addTextDisplayComponents(new TextDisplayBuilder().setContent(`**${client.emoji.premium} | Premium Commands**`))
+                        .addTextDisplayComponents(new TextDisplayBuilder().setContent(`**${client.emoji.premium} | Premium Commands**\n\n${usageNote}`))
                         .setThumbnailAccessory(new ThumbnailBuilder().setURL(client.user.displayAvatarURL({ dynamic: true })))
                 )
                 .addSeparatorComponents(new SeparatorBuilder().setDivider(true))
                 .addTextDisplayComponents(new TextDisplayBuilder().setContent(
                     `${client.emoji.premium} **Make Radio your server's own with Premium.**\n\n` +
-                    `**Your server, your look**\nCustomize Radio's icon and banner with \`/customize\`.\n\n` +
+                    `**Your server, your look**\nCustomize Radio's icon and banner with \`customize\`.\n\n` +
                     `**More ways to personalize your music**\nAccess premium audio presets without cluttering your playback controls.\n\n` +
                     `**Get Premium**\nContact the bot owner through [our support server](${client.config.server}) for a premium code.\n` +
-                    `Activate it with \`${textPrefix}redeem <code>\` or \`/redeem code:<code>\`.\n\n` +
-                    `**Already have Premium?**\nCheck your server's status with \`${textPrefix}premium\` or \`/premium\`.`
+                    `Activate it with \`redeem <code>\`.\n\n` +
+                    `**Already have Premium?**\nCheck your server's status with \`premium\`.`
                 ))
                 .addSeparatorComponents(new SeparatorBuilder().setDivider(true))
                 .addTextDisplayComponents(new TextDisplayBuilder().setContent(
-                    `-# ${client.emoji.premium} Use \`${prefix}premium\` to check your server's premium status`
+                    `-# ${client.emoji.premium} Use \`premium\` to check your server's premium status`
                 ));
 
             // makeMsg wraps a single container with buttons (used for all non-home pages)
@@ -174,7 +179,7 @@ class Help extends AvonCommand{
             let call = msg.createMessageComponentCollector({
                 filter: (o) => {
                     if(o.user.id === message.author.id) return true;
-                    else return o.reply({ content: `${client.emoji.cross} | This is not your session, run \`${prefix}help\` instead.`, ephemeral: true });
+                    else return o.reply({ content: `${client.emoji.cross} | This is not your session. Run \`help\` using prefix \`${textPrefix}\` or slash \`/\` to open your own.`, ephemeral: true });
                 },
                 time: 50000,
             });

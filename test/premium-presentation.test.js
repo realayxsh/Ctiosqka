@@ -111,11 +111,14 @@ test('help highlights Premium and keeps filter details in their own category', a
     await new Help(f.client).run(f.client, f.message, [], '+');
     const home = f.sent[0].components[0].toJSON();
     assert.match(JSON.stringify(home), /Radio Premium/);
-    assert.match(JSON.stringify(home), /\+play/);
+    assert.match(JSON.stringify(home), /Two ways to use commands/);
+    assert.match(JSON.stringify(home), /Prefix:\*\* `\+`/);
+    assert.match(JSON.stringify(home), /`play`/);
     assert.doesNotMatch(JSON.stringify(home), /\/filter/);
-    assert.doesNotMatch(JSON.stringify(home), /audio presets|audio filters|8D|Bass Boost/);
+    assert.doesNotMatch(JSON.stringify(home), /8D|Bass Boost/);
     const navigation = f.sent[0].components[1].toJSON();
-    assert(navigation.components.some(button => button.label === 'Premium'));
+    assert.deepEqual(navigation.components.map(button => button.custom_id), ['m1', 'm3', 'm4', 'm6', 'm5']);
+    assert(navigation.components.every(button => button.style === 2 && button.emoji && !button.label));
     assert(!navigation.components.some(button => button.custom_id === 'm2'));
     let premium;
     await f.events.collect({ isButton: () => true, customId: 'm6', update: async payload => { premium = payload; } });
@@ -123,7 +126,7 @@ test('help highlights Premium and keeps filter details in their own category', a
     assert.match(copy, /Get Premium/);
     assert.match(copy, /icon and banner/);
     assert(copy.includes('**More ways to personalize your music**\\nAccess premium audio presets without cluttering your playback controls.'));
-    assert.match(copy, /\+redeem/);
+    assert.match(copy, /`redeem <code>`/);
     assert.doesNotMatch(copy, /filter effect:|Vote-Only Filters|Premium Filters/);
 });
 
@@ -147,8 +150,28 @@ test('help lists every filter in All Commands and the Filters category without p
         await f.events.collect({ isButton: () => true, customId, update: async data => { payload = data; } });
         const copy = serialize(payload);
         for (const command of filters) {
-            const usage = customId === 'm5' ? `+${command.name}` : `/filter effect:${command.name}`;
+            const usage = `\`${command.name}\``;
             assert(copy.includes(usage), `Missing ${usage} in ${customId}`);
         }
+    }
+});
+
+test('every help page shows both invocation methods and unprefixed command names', async () => {
+    const f = fixture();
+    await new Help(f.client).run(f.client, f.message, [], '!');
+    const check = payload => {
+        const copy = serialize(payload);
+        assert.match(copy, /Prefix:\*\* `!`/);
+        assert.match(copy, /Slash:\*\* `\/`/);
+        assert.doesNotMatch(copy, /`[\/!+][a-z0-9]/i);
+        assert.equal(payload.components.length, 3);
+        assert.equal(payload.components[1].toJSON().components.length, 5);
+    };
+    check(f.sent[0]);
+    for (const value of ['ok1', 'ok2', 'ok3', 'ok4', 'ok5', 'ok6', 'ok7']) {
+        let payload;
+        await f.events.collect({ isButton: () => false, isStringSelectMenu: () => true,
+            values: [value], update: async data => { payload = data; } });
+        check(payload);
     }
 });
