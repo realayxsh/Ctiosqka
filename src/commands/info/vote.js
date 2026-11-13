@@ -1,11 +1,13 @@
 const { ContainerBuilder, TextDisplayBuilder, SectionBuilder, ThumbnailBuilder, ActionRowBuilder, ButtonBuilder, ButtonStyle, MessageFlags } = require("discord.js");
 const AvonCommand = require("../../structures/avonCommand");
+const { isVotingEnabled } = require('../../structures/voting');
 
 class Vote extends AvonCommand{
     get name(){ return 'vote' }
     get aliases(){ return ['vot'] }
     get cat(){ return 'info' }
     async run(client, message, args, prefix){
+        if (!isVotingEnabled(client)) return message.channel.send({ content: 'Voting is temporarily disabled.' });
         const container = new ContainerBuilder()
             .addSectionComponents(
                 new SectionBuilder()

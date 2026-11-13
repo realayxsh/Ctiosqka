@@ -1,5 +1,6 @@
 const { executeSlash } = require('../../slash/execute');
 const wh = require('../../structures/webhook');
+const { isVotingEnabled } = require('../../structures/voting');
 const { ActionRowBuilder, ButtonBuilder, ButtonStyle, ContainerBuilder, TextDisplayBuilder, SectionBuilder, ThumbnailBuilder, SeparatorBuilder, MessageFlags } = require("discord.js");
 const { buildPlaybackRows } = require('../../structures/playbackControls');
 const ms = require('ms');
@@ -11,7 +12,8 @@ const voteApi = new Api(process.env.topggapi || config.topggapi);
 // ── Vote cache: TTL 5 minutes, gracefully handles missing/invalid API token ──
 const _voteCache = new Map();
 const VOTE_TTL = 5 * 60 * 1000;
-async function hasVoted(userId) {
+async function hasVoted(userId, client) {
+    if (!isVotingEnabled(client)) return true;
     const entry = _voteCache.get(userId);
     if (entry && Date.now() < entry.expires) return entry.voted;
     try {
@@ -67,7 +69,7 @@ class AvonInteractions extends AvonClientEvents{
                         return interaction.reply(cv2(`${this.client.emoji.cross} | Nothing is playing right now.`, true));
                     const isOwner = this.client.config.owners.includes(interaction.user.id);
                     if(!isOwner){
-                        const voted = await hasVoted(interaction.user.id);
+                        const voted = await hasVoted(interaction.user.id, this.client);
                         if(!voted) return interaction.reply({
                             flags: [MessageFlags.IsComponentsV2, MessageFlags.Ephemeral],
                             components: [

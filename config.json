@@ -1,4 +1,7 @@
 {
+  "voting": {
+    "enabled": false
+  },
   "logging": {
     "enabled": true,
     "webhooks": {

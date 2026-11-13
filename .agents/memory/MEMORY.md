@@ -4,3 +4,4 @@
 - [Slash and owner command scope](slash-owner-scope.md) — public commands use slash; owner commands stay message-only through no-prefix DMs or server mentions.
 - [Premium promotion](premium-promotion.md) — prioritize Premium over repeated filter menus and recommendations; keep filters available on request.
 - [Bot logging scope](logging-scope.md) — separate webhook destinations; joins/leaves mean bot server membership, not member events.
+- [Voting availability](voting-availability.md) — voting is temporarily hidden and disabled; retain it for reactivation when the user requests it.

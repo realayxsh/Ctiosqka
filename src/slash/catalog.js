@@ -2,6 +2,7 @@ const fs = require('node:fs');
 const path = require('node:path');
 const { SlashCommandBuilder, InteractionContextType, ApplicationIntegrationType, ChannelType } = require('discord.js');
 const { PRESETS } = require('../audio/filters');
+const { isVotingEnabled } = require('../structures/voting');
 
 // Read identifiers without executing command modules (some import the command loader).
 function commandInventory() {
@@ -41,8 +42,9 @@ const argumentsByCommand = {
     lyrics: ['query'], profile: ['user'], setprefix: ['prefix'], disablechannel: ['channel'], redeem: ['code'],
 };
 
-function createDefinitions() {
-    const commands = inventory.filter(command => !command.ownerOnly && command.folder !== 'filters').map(({ name }) => {
+function createDefinitions(client) {
+    const commands = inventory.filter(command => !command.ownerOnly && command.folder !== 'filters' &&
+        (command.name !== 'vote' || isVotingEnabled(client))).map(({ name }) => {
         if (!descriptions[name]) throw new Error(`Add a slash schema for public command: ${name}`);
         const builder = new SlashCommandBuilder().setName(name).setDescription(descriptions[name])
             .setContexts(InteractionContextType.Guild).setIntegrationTypes(ApplicationIntegrationType.GuildInstall);

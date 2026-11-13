@@ -1,6 +1,7 @@
 const AvonCommand = require("../../structures/avonCommand");
 const { Api } = require(`@top-gg/sdk`);
 const config = require(`../../../config.json`);
+const { isVotingEnabled } = require('../../structures/voting');
 const badge = require(`./badges.json`);
 const { ContainerBuilder, TextDisplayBuilder, SectionBuilder, ThumbnailBuilder, MessageFlags } = require("discord.js");
 
@@ -8,7 +9,8 @@ const voteApi = new Api(process.env.topggapi || config.topggapi);
 
 // Vote cache: 5 min positive, 30s negative
 const _voteCache = new Map();
-async function safeHasVoted(userId) {
+async function safeHasVoted(userId, client) {
+    if (!isVotingEnabled(client)) return false;
     const entry = _voteCache.get(userId);
     if (entry && Date.now() < entry.expires) return entry.voted;
     try {
@@ -73,7 +75,7 @@ class Badges extends AvonCommand{
         // Fetch support guild + vote status in parallel
         const [guild, voted] = await Promise.all([
             getSupportGuild(client),
-            safeHasVoted(member.id)
+            safeHasVoted(member.id, client)
         ]);
 
         if (!guild) {

@@ -4,6 +4,7 @@ const AvonClientEvent = require("../../structures/Eventhandler");
 const wh = require('../../structures/webhook');
 const { continueAutoplay } = require('../../audio/autoplay');
 const { isPremium } = require('../../structures/premiumAccess');
+const { isVotingEnabled } = require('../../structures/voting');
 
 class PlayerEmpty extends AvonClientEvent{
     get name(){ return 'playerEmpty'; }
@@ -51,7 +52,7 @@ class PlayerEmpty extends AvonClientEvent{
                 const row = new ActionRowBuilder().addComponents(
                     new ButtonBuilder().setStyle(ButtonStyle.Link).setURL(`https://top.gg/bot/1097475016880304180/vote`).setLabel(`Vote`)
                 );
-                ch.send({ flags: [MessageFlags.IsComponentsV2], components: [container, row] }).catch(() => {});
+                ch.send({ flags: [MessageFlags.IsComponentsV2], components: isVotingEnabled(this.client) ? [container, row] : [container] }).catch(() => {});
             }
         }
 

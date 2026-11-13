@@ -4,6 +4,7 @@ const { readdirSync } = require('fs');
 const ascii = require(`ascii-table`);
 const config = require(`../../config.json`);
 const wh = require('./webhook');
+const { isVotingEnabled } = require('./voting');
 const { isOwner, runOwnerMessage } = require('./ownerMessages');
 const table = new ascii().setHeading('Avon Commands', 'Status');
 const top = require(`@top-gg/sdk`);
@@ -22,7 +23,8 @@ function invalidateNoprefixCache(key) { _noprefixCache.delete(key); }
 // ── Vote cache: TTL 5 minutes, gracefully handles missing/invalid API token ──
 const _voteCache = new Map();
 const VOTE_TTL = 5 * 60 * 1000;
-async function hasVoted(userId) {
+async function hasVoted(userId, client) {
+    if (!isVotingEnabled(client)) return true;
     const entry = _voteCache.get(userId);
     if (entry && Date.now() < entry.expires) return entry.voted;
     try {
@@ -91,7 +93,7 @@ class AvonCommands extends EventEmitter {
             let b2 = new ButtonBuilder().setStyle(ButtonStyle.Link).setLabel(`Support`).setURL(this.client.config.server);
             let b3 = new ButtonBuilder().setStyle(ButtonStyle.Link).setLabel(`Vote`).setURL(`https://top.gg/bot/1097475016880304180/vote`);
             let b4 = new ButtonBuilder().setStyle(ButtonStyle.Link).setLabel(`Web`).setURL(`https://shorturl.at/egszS`);
-            let ro = new ActionRowBuilder().addComponents(b1, b2, b3, b4);
+            let ro = new ActionRowBuilder().addComponents(...(isVotingEnabled(this.client) ? [b1, b2, b3, b4] : [b1, b2, b4]));
             const container = new ContainerBuilder()
                 .addSectionComponents(
                     new SectionBuilder()
@@ -153,6 +155,8 @@ class AvonCommands extends EventEmitter {
             const commandName = args.shift().toLowerCase();
             const avonCommand = this.commands.get(commandName) || this.commands.find((c) => c.aliases && c.aliases.includes(commandName));
             if(!avonCommand) return;
+            if(avonCommand.name === 'vote' && !isVotingEnabled(this.client))
+                return message.channel.send(cv2('Voting is temporarily disabled.'));
             if(avonCommand.ownerOnly && !isOwner(this.client, message.author.id)) return;
 
             // ── Disabled channel check ──
@@ -181,10 +185,10 @@ class AvonCommands extends EventEmitter {
 
             // ── Run vote + premium checks in parallel for speed ──
             const needsPremium = !!avonCommand.premium;
-            const needsVote    = !needsPremium && !!avonCommand.vote && !client.config.owners.includes(message.author.id);
+            const needsVote    = isVotingEnabled(client) && !needsPremium && !!avonCommand.vote && !client.config.owners.includes(message.author.id);
 
             const [voted, active] = await Promise.all([
-                needsVote    ? hasVoted(message.author.id)            : Promise.resolve(true),
+                needsVote    ? hasVoted(message.author.id, client)    : Promise.resolve(true),
                 needsPremium ? isPremium(client, message.guild.id)    : Promise.resolve(true),
             ]);
 

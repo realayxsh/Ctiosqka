@@ -1,5 +1,6 @@
 const { ContainerBuilder, TextDisplayBuilder, SectionBuilder, ThumbnailBuilder, SeparatorBuilder, ButtonBuilder, ButtonStyle, ActionRowBuilder, StringSelectMenuBuilder, MessageFlags } = require("discord.js");
 const AvonCommand = require("../../structures/avonCommand");
+const { isVotingEnabled } = require('../../structures/voting');
 
 class Help extends AvonCommand{
     get name(){ return 'help'; }
@@ -13,7 +14,8 @@ class Help extends AvonCommand{
             let musicCmds  = client.AvonCommands.commands.filter(x => x.cat && x.cat === `music`);
             let filterCmds = client.AvonCommands.commands.filter(x => x.cat && x.cat === `filters`);
             let setCmds    = client.AvonCommands.commands.filter(x => x.cat && x.cat === `set`);
-            let infoCmds   = client.AvonCommands.commands.filter(x => x.cat && x.cat === `info`);
+            let infoCmds   = client.AvonCommands.commands.filter(x => x.cat && x.cat === `info` &&
+                (x.name !== 'vote' || isVotingEnabled(client)));
             let premCmds   = client.AvonCommands.commands.filter(x => x.cat && x.cat === `premium`);
 
             let b1 = new ButtonBuilder().setStyle(ButtonStyle.Secondary).setCustomId(`m1`).setEmoji(client.emoji.music);
@@ -43,7 +45,8 @@ class Help extends AvonCommand{
                             `${client.emoji.arrow} Start listening with \`play\`.\n\n` +
                             `${client.emoji.premium} **Radio Premium** — custom server branding and premium audio presets.\n` +
                             `Explore \`premium\`, or select **Premium** below.\n\n` +
-                            `${client.emoji.arrow} [Invite](https://discord.com/api/oauth2/authorize?client_id=${client.user.id}&permissions=2184571968&scope=bot%20applications.commands) | [Support](${client.config.server}) | [Vote](https://top.gg/bot/1097475016880304180/vote)`
+                            `${client.emoji.arrow} [Invite](https://discord.com/api/oauth2/authorize?client_id=${client.user.id}&permissions=2184571968&scope=bot%20applications.commands) | [Support](${client.config.server})` +
+                            (isVotingEnabled(client) ? ` | [Vote](https://top.gg/bot/1097475016880304180/vote)` : '')
                         ))
                         .setThumbnailAccessory(new ThumbnailBuilder().setURL(client.user.displayAvatarURL({ dynamic: true })))
                 )

@@ -3,8 +3,9 @@ const { ActionRowBuilder, ContainerBuilder, TextDisplayBuilder, StringSelectMenu
 const { PRESETS, FILTER_OPTIONS, applyFilter, filterMessage, filterFailure } = require('../audio/filters');
 const { OWNER_COMMAND_NAMES, createDefinitions, slashArguments } = require('./catalog');
 const wh = require('../structures/webhook');
+const { isVotingEnabled } = require('../structures/voting');
 
-const publicNames = new Set(createDefinitions().map(command => command.name));
+const publicNames = new Set([...createDefinitions().map(command => command.name), 'vote']);
 const response = text => ({
     flags: [MessageFlags.IsComponentsV2],
     components: [new ContainerBuilder().addTextDisplayComponents(new TextDisplayBuilder().setContent(text))],
@@ -44,6 +45,9 @@ function makeMessage(client, interaction, args, commandName, member) {
 async function executeSlash(client, interaction, access) {
     const originalName = interaction.commandName;
     const name = originalName === 'filters' ? 'filter' : originalName;
+    if (name === 'vote' && !isVotingEnabled(client)) {
+        return interaction.reply({ content: 'Voting is temporarily disabled.', flags: [MessageFlags.Ephemeral] });
+    }
     // An old Discord registration must never make an owner handler reachable.
     if (OWNER_COMMAND_NAMES.has(originalName) || !publicNames.has(name)) {
         return interaction.reply({ content: 'This command is not available as a slash command.', flags: [MessageFlags.Ephemeral] });
@@ -110,7 +114,7 @@ async function executeSlash(client, interaction, access) {
             return interaction.editReply(response(`${client.emoji.cross} | Nothing is playing right now.`));
         }
         const [voted, premium] = await Promise.all([
-            command.vote && !command.premium && !isOwner ? access.hasVoted(interaction.user.id) : true,
+            isVotingEnabled(client) && command.vote && !command.premium && !isOwner ? access.hasVoted(interaction.user.id, client) : true,
             command.premium ? access.isPremium(client, interaction.guild.id) : true,
         ]);
         if (!voted) return interaction.editReply(response(`${client.emoji.tick} | Vote required: https://top.gg/bot/${client.user.id}/vote`));

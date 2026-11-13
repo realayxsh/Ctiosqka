@@ -18,7 +18,7 @@ function fixture(name, values = {}, { subcommand, owner = true } = {}) {
     const channel = { id: 'channel', name: 'music', toString: () => '<#channel>' };
     const member = { voice: { channelId: 'voice', channel: { id: 'voice' } }, permissions: { has: () => true } };
     const client = {
-        config: { owners: owner ? ['caller'] : [], coowners: [], prefix: '+' },
+        config: { owners: owner ? ['caller'] : [], coowners: [], prefix: '+', voting: { enabled: true } },
         user: { id: 'bot', displayAvatarURL: () => 'https://example.com/bot.png' },
         emoji, data: store(), data3: store(),
         poru: { players: new Map() }, AvonCommands: { commands: new Collection() },
@@ -45,12 +45,13 @@ function fixture(name, values = {}, { subcommand, owner = true } = {}) {
 const texts = calls => JSON.stringify(calls.filter(([type]) => type === 'edit').map(([, data]) =>
     data.components?.map(component => component.toJSON())));
 
-test('the slash catalog covers every non-owner command, grouping only filters', () => {
+test('the slash catalog covers enabled public commands, grouping filters and hiding disabled voting', () => {
     const definitions = createDefinitions();
     const names = new Set(definitions.map(command => command.name));
     assert.equal(names.size, definitions.length);
     for (const command of inventory) {
         if (command.ownerOnly) assert(!names.has(command.name));
+        else if (command.name === 'vote') assert(!names.has('vote'));
         else if (command.folder === 'filters') {
             assert(names.has('filter'));
             assert(Object.hasOwn(PRESETS, command.name) || command.name === 'clearfilters');
