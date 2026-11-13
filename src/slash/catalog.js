@@ -33,13 +33,14 @@ const descriptions = {
     uptime: 'Show bot uptime', profile: 'View a user profile and badges',
     setprefix: 'Check or change the server text-command prefix', '247': 'Toggle staying in voice around the clock',
     autoplay: 'Toggle automatic song recommendations', disablechannel: 'Enable or disable commands in a channel',
+    enablechannel: 'Enable bot commands in a channel',
     customize: 'Customize the bot appearance for this server', premium: 'Check server premium status',
     redeem: 'Redeem a server premium code',
 };
 
 const argumentsByCommand = {
     play: ['query'], loop: ['type'], volume: ['level'], seek: ['position'], remove: ['position'], skip: ['position'],
-    lyrics: ['query'], profile: ['user'], setprefix: ['prefix'], disablechannel: ['channel'], redeem: ['code'],
+    lyrics: ['query'], profile: ['user'], setprefix: ['prefix'], disablechannel: ['channel'], enablechannel: ['channel'], redeem: ['code'],
 };
 
 function createDefinitions(client) {
@@ -78,7 +79,8 @@ function createDefinitions(client) {
                 builder.addStringOption(option => option.setName('prefix').setDescription('New text prefix; omit to view the current prefix').setMinLength(1).setMaxLength(3));
                 break;
             case 'disablechannel':
-                builder.addChannelOption(option => option.setName('channel').setDescription('Channel to toggle; omit for this channel')
+            case 'enablechannel':
+                builder.addChannelOption(option => option.setName('channel').setDescription('Target channel; omit for this channel')
                     .addChannelTypes(ChannelType.GuildText, ChannelType.GuildAnnouncement, ChannelType.PublicThread, ChannelType.PrivateThread, ChannelType.GuildVoice));
                 break;
             case 'customize':

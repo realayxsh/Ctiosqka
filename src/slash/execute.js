@@ -63,7 +63,7 @@ async function executeSlash(client, interaction, access) {
             member = await interaction.guild.members.fetch(interaction.user.id);
         }
         const disabled = await client.data.get(`disabled_channel_${interaction.guild.id}_${interaction.channelId}`);
-        const canEnable = name === 'disablechannel' && member.permissions.has(PermissionsBitField.Flags.ManageChannels);
+        const canEnable = ['disablechannel', 'enablechannel'].includes(name) && member.permissions.has(PermissionsBitField.Flags.ManageChannels);
         if (disabled === 'disabled' && !isOwner && !canEnable) {
             return interaction.editReply(response(`${client.emoji.cross} | Commands are disabled in this channel.`));
         }

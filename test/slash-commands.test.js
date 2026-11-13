@@ -166,6 +166,55 @@ test('premium-code redemption responses are deferred privately', async () => {
     assert.deepEqual(calls[0], ['defer', { flags: [64] }]);
 });
 
+test('/enablechannel restores commands and never disables an already enabled channel', async () => {
+    const Enable = require('../src/commands/settings/EnableChannel');
+    const { client, interaction, access, calls } = fixture('enablechannel', {}, { owner: false });
+    client.AvonCommands.commands.set('enablechannel', new Enable(client));
+    client.data.map.set('disabled_channel_guild_channel', 'disabled');
+    await executeSlash(client, interaction, access);
+    assert.equal(client.data.map.has('disabled_channel_guild_channel'), false);
+    assert.match(texts(calls), /Enabled/);
+    await executeSlash(client, interaction, access);
+    assert.equal(client.data.map.has('disabled_channel_guild_channel'), false);
+    assert.match(texts(calls), /already/);
+    const schema = createDefinitions().find(command => command.name === 'enablechannel');
+    assert.equal(schema.options[0].name, 'channel');
+    assert.equal(schema.options[0].required, false);
+    assert.deepEqual(slashArguments(fixture('enablechannel', { channel: 'other' }).interaction, 'enablechannel'), ['other']);
+});
+
+test('/enablechannel requires Manage Channels or owner access', async () => {
+    const Enable = require('../src/commands/settings/EnableChannel');
+    const { client, interaction, access, calls } = fixture('enablechannel', {}, { owner: false });
+    client.AvonCommands.commands.set('enablechannel', new Enable(client));
+    interaction.member.permissions.has = () => false;
+    client.data.map.set('disabled_channel_guild_channel', 'disabled');
+    await executeSlash(client, interaction, access);
+    assert.equal(client.data.map.get('disabled_channel_guild_channel'), 'disabled');
+    client.data.map.clear();
+    await executeSlash(client, interaction, access);
+    assert.match(texts(calls), /Manage Channels/);
+});
+
+test('prefix enable and enablechannel work inside disabled channels for managers', async () => {
+    const Handler = require('../src/structures/CommandHandler');
+    const Enable = require('../src/commands/settings/EnableChannel');
+    const { client, interaction, calls } = fixture('enablechannel', {}, { owner: false });
+    client.on = () => {};
+    client.data2 = store();
+    const handler = new Handler(client);
+    handler.commands.set('enablechannel', new Enable(client));
+    interaction.guild.members.me.permissionsIn = () => ({ has: () => true });
+    const message = makeMessage(client, interaction, [], 'enablechannel', interaction.member);
+    for (const name of ['enablechannel', 'enable']) {
+        client.data.map.set('disabled_channel_guild_channel', 'disabled');
+        message.content = `+${name}`;
+        await handler.run(message);
+        assert.equal(client.data.map.has('disabled_channel_guild_channel'), false);
+    }
+    assert.match(texts(calls), /Enabled/);
+});
+
 test('registration replaces owner slash entries and cleans shadowing guild commands', async () => {
     const calls = [];
     const rest = {

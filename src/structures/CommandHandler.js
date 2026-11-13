@@ -162,7 +162,9 @@ class AvonCommands extends EventEmitter {
             // ── Disabled channel check ──
             const disabledKey = `disabled_channel_${message.guild.id}_${message.channel.id}`;
             const channelDisabled = await this.client.data.get(disabledKey);
-            if(channelDisabled === `disabled` && !this.client.config.owners.includes(message.author.id)) return;
+            const canEnable = ['disablechannel', 'enablechannel'].includes(avonCommand.name) &&
+                message.member.permissions.has(PermissionsBitField.Flags.ManageChannels);
+            if(channelDisabled === `disabled` && !this.client.config.owners.includes(message.author.id) && !canEnable) return;
 
             if(!message.guild.members.me.permissionsIn(message.channel).has(PermissionsBitField.Flags.ViewChannel)) return;
             if(!message.guild.members.me.permissionsIn(message.channel).has(PermissionsBitField.Flags.SendMessages)) return message.author.send({ content: `I don't have **Send Messages** permissions in that channel` }).catch(e => null);
