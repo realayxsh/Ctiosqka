@@ -21,10 +21,10 @@
     "mongourl6" : "mongodb+srv://ayxsh:ayxsh@cluster0.n3opc6g.mongodb.net/?appName=Cluster0",
     "nodes" : [
         {
-        "name" : "Jirayu",
-        "url" : "lavalink.jirayu.net:443",
+        "name": "Radio",
+        "url": "miami3.visihost.in:2503",
         "auth" : "youshallnotpass",
-        "secure" : true
+        "secure": false
         }
     ]
 }
