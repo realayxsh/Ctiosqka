@@ -28,12 +28,12 @@ class Skip extends AvonCommand {
             return send(`${client.emoji.skip || client.emoji.music} **| Skipped the current track**`);
         }
         if (args.length !== 1 || !/^[1-9]\d*$/.test(args[0]) || !Number.isSafeInteger(Number(args[0]))) {
-            return send(`${client.emoji.warning} | Use a whole queue position, starting at **1**.\nUsage: \`${prefix}skip [position]\``);
+            return send(`${client.emoji.cross} | Use a whole queue position, starting at **1**.\nUsage: \`${prefix}skip [position]\``);
         }
         const position = Number(args[0]);
-        if (!player.queue.length) return send(`${client.emoji.warning} | There are no songs in the upcoming queue.`);
+        if (!player.queue.length) return send(`${client.emoji.cross} | There are no songs in the upcoming queue.`);
         if (position > player.queue.length) {
-            return send(`${client.emoji.warning} | That queue position doesn't exist. Choose **1–${player.queue.length}**.`);
+            return send(`${client.emoji.cross} | That queue position doesn't exist. Choose **1–${player.queue.length}**.`);
         }
         const current = player.queue.current;
         const target = player.queue[position - 1];

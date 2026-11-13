@@ -6,3 +6,4 @@
 - [Bot logging scope](logging-scope.md) — separate webhook destinations; joins/leaves mean bot server membership, not member events.
 - [Voting availability](voting-availability.md) — voting is temporarily hidden and disabled; retain it for reactivation when the user requests it.
 - [Spotify link loading](spotify-link-loading.md) — empty plugin results may hide API/schema failures; verify native node resolution before blaming a public link.
+- [Warning emoji semantics](emoji-semantics.md) — add warnings selectively for caution/already-active notices; preserve crosses for rejected commands and errors.

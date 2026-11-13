@@ -98,7 +98,7 @@ function applyFilter(player, selection, { toggle = false, initialize = false } =
 }
 
 function filterMessage(result, emoji) {
-    if (result.disabled) return `${emoji.cross} | Disabled **${PRESETS[result.previous].label}**. Clean audio restored.`;
+    if (result.disabled) return `${emoji.tick} | Disabled **${PRESETS[result.previous].label}**. Clean audio restored.`;
     if (!result.id) return `${emoji.tick} | Cleared all filters. Clean audio restored.`;
     const icon = emoji[`filter_${result.id}`] || emoji.filters;
     return `${icon} | Enabled **${result.label}**.${result.note ? `\n${result.note}` : ''}`;

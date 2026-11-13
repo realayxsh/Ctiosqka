@@ -47,7 +47,7 @@ class Redeem extends AvonCommand{
                 let isActive   = isLifetime || Date.now() < existing.expiresAt;
                 if(isActive){
                     let expText = isLifetime ? '**Lifetime**' : `<t:${Math.floor(existing.expiresAt/1000)}:R>`;
-                    return send(`${client.emoji.tick} | This server already has **Premium** active! Expires: ${expText}`);
+                    return send(`${client.emoji.warning} | This server already has **Premium** active! Expires: ${expText}`);
                 }
             }
 

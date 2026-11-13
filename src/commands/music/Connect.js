@@ -21,7 +21,7 @@ class Connect extends AvonCommand {
 
         let player = client.poru.players.get(message.guild.id);
         if (message.guild.members.me.voice.channel) {
-            if (player) return send(`${client.emoji.cross} **| I am already connected to ${message.guild.members.me.voice.channel}**`);
+            if (player) return send(`${client.emoji.warning} **| I am already connected to ${message.guild.members.me.voice.channel}**`);
             message.guild.members.me.voice.disconnect();
             if (message.guild.members.me.permissionsIn(message.member.voice.channel).has([PermissionsBitField.Flags.Connect, PermissionsBitField.Flags.Speak])) {
                 await client.poru.createPlayer({ guildId: message.guild.id, textId: message.channel.id, voiceId: message.member.voice.channel.id, volume: 100, deaf: true, shardId: message.guild.shardId });

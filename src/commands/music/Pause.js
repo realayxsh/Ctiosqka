@@ -9,7 +9,7 @@ class Pause extends AvonCommand {
     get inVoice() { return true; }
     get sameVoice() { return true; }
     async run(client, message, args, prefix, player) {
-        const text = player.paused ? `${client.emoji.cross} **| Player is already paused**` : `${client.emoji.pause || client.emoji.music} **| Paused the player**`;
+        const text = player.paused ? `${client.emoji.warning} **| Player is already paused**` : `${client.emoji.pause || client.emoji.music} **| Paused the player**`;
         if (!player.paused) player.pause(true);
         const container = new ContainerBuilder()
             .addSectionComponents(

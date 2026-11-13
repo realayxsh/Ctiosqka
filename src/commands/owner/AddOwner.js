@@ -34,7 +34,7 @@ class AddOwner extends AvonCommand {
         if (!userId || isNaN(userId)) return send(`${client.emoji.cross} | Usage: \`${prefix}addowner <user_id>\` or \`${prefix}removeowner <user_id>\``);
 
         if (alias === "addowner") {
-            if (client.config.owners.includes(userId)) return send(`${client.emoji.cross} | <@${userId}> is already a bot owner.`);
+            if (client.config.owners.includes(userId)) return send(`${client.emoji.warning} | <@${userId}> is already a bot owner.`);
             client.config.owners.push(userId);
             saveConfig();
             return send(`${client.emoji.tick} | <@${userId}> (\`${userId}\`) has been added as a bot owner.`);

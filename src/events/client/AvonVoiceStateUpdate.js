@@ -56,7 +56,7 @@ class AvonVoiceStateUpdate extends AvonClientEvent {
             const { ContainerBuilder, TextDisplayBuilder, MessageFlags } = require('discord.js');
             const container = new ContainerBuilder()
                 .addTextDisplayComponents(new TextDisplayBuilder().setContent(
-                    `${this.client.emoji.cross} | Left the voice channel — no one was listening.`
+                    `${this.client.emoji.warning} | Left the voice channel — no one was listening.`
                 ));
             ch.send({ flags: [MessageFlags.IsComponentsV2], components: [container] }).catch(() => {});
         }

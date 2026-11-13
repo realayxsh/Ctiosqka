@@ -25,19 +25,19 @@ async function runOwnerMessage(client, message) {
     if (serverOption >= 0) {
         const serverId = args[serverOption + 1];
         if (!/^\d{17,20}$/.test(serverId || '')) {
-            await message.reply({ content: 'Use `--server <server-id>` to choose a server.' });
+            await message.reply({ content: `${client.emoji.cross} | Use \`--server <server-id>\` to choose a server.` });
             return true;
         }
         args.splice(serverOption, 2);
         try {
             guild = client.guilds.cache.get(serverId) || await client.guilds.fetch(serverId);
         } catch {
-            await message.reply({ content: 'I could not access that server. Choose a server this bot has joined.' });
+            await message.reply({ content: `${client.emoji.cross} | I could not access that server. Choose a server this bot has joined.` });
             return true;
         }
     }
     if (!guild && command.name === 'say' && args[0]?.toLowerCase() !== 'dm') {
-        await message.reply({ content: 'For a server-channel announcement, mention me in that server or add `--server <server-id>` in this DM.' });
+        await message.reply({ content: `${client.emoji.warning} | For a server-channel announcement, mention me in that server or add \`--server <server-id>\` in this DM.` });
         return true;
     }
     // Keep alias parsing independent of whether a mention/default prefix was used.
@@ -58,7 +58,7 @@ async function runOwnerMessage(client, message) {
     } catch (error) {
         wh.error('Owner command failed', error);
         console.warn(`[Owner Commands] ${command.name} failed (${error?.name || 'Error'})`);
-        await message.reply({ content: 'Could not complete this owner command. Check its arguments and try again.' });
+        await message.reply({ content: `${client.emoji.cross} | Could not complete this owner command. Check its arguments and try again.` });
     }
     return true;
 }

@@ -138,7 +138,7 @@ test('voice, paid access, and disabled-channel checks run before public handlers
     interaction.member.voice = {};
     await executeSlash(client, interaction, access);
     assert.match(texts(calls), /voice channel/);
-    assert.ok(texts(calls).includes(emoji.warning));
+    assert.ok(texts(calls).includes(emoji.cross));
     assert.equal(invoked, false);
     interaction.member.voice = { channelId: 'voice' };
     access.isPremium = async () => false;
@@ -149,7 +149,7 @@ test('voice, paid access, and disabled-channel checks run before public handlers
     await executeSlash(client, interaction, access);
     assert.match(texts(calls), /disabled in this channel/);
     const latest = calls.filter(([type]) => type === 'edit').at(-1)[1];
-    assert.ok(JSON.stringify(latest).includes(`${emoji.warning} | Commands are disabled`));
+    assert.ok(JSON.stringify(latest).includes(`${emoji.cross} | Commands are disabled`));
     assert.equal(invoked, false);
 });
 

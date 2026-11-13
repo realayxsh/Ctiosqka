@@ -73,7 +73,7 @@ class PlayerEmpty extends AvonClientEvent{
         }
         const container = new ContainerBuilder()
             .addTextDisplayComponents(new TextDisplayBuilder().setContent(
-                `${this.client.emoji.cross} | Enable 247 mode of **${this.client.user.username}** to keep me in the voice channel.`
+                `${this.client.emoji.warning} | Enable 247 mode of **${this.client.user.username}** to keep me in the voice channel.`
             ));
         ch.send({ flags: [MessageFlags.IsComponentsV2], components: [container] });
     }

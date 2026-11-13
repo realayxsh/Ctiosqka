@@ -17,7 +17,7 @@ class DisableChannel extends AvonCommand{
         };
 
         if(!message.member.permissions.has(PermissionsBitField.Flags.ManageChannels) && !client.config.owners.includes(message.author.id)){
-            return send(`${client.emoji.warning} | **You need Manage Channels permission to use this.**`);
+            return send(`${client.emoji.cross} | **You need Manage Channels permission to use this.**`);
         }
 
         let target = message.mentions.channels.first() || (args[0] ? message.guild.channels.cache.get(args[0]) : message.channel);
@@ -36,7 +36,7 @@ class DisableChannel extends AvonCommand{
             return send(`${client.emoji.tick} | **Enabled** bot commands in ${target}`);
         } else {
             await client.data.set(key, `disabled`);
-            return send(`${client.emoji.cross} | **Disabled** bot commands in ${target}`);
+            return send(`${client.emoji.tick} | **Disabled** bot commands in ${target}`);
         }
     }
 }

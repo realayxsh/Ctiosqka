@@ -67,7 +67,7 @@ class Play extends AvonCommand {
             if (/^(https?:\/\/|spotify:)/i.test(query)) {
                 const source = musicLinkSource(query);
                 if (!source) {
-                    return editMsg(searchingMsg, `**${client.emoji.warning} | Only Spotify, Deezer, and SoundCloud links are supported.**`);
+                    return editMsg(searchingMsg, `**${client.emoji.cross} | Only Spotify, Deezer, and SoundCloud links are supported.**`);
                 }
 
                 try {
@@ -122,7 +122,7 @@ class Play extends AvonCommand {
                 try {
                     const player = client.poru.players.get(message.guild.id);
                     if (!player) {
-                        return editMsg(searchingMsg, `**${client.emoji.warning} | Player no longer exists. Please run the command again.**`);
+                        return editMsg(searchingMsg, `**${client.emoji.cross} | Player no longer exists. Please run the command again.**`);
                     }
 
                     const engines = {
@@ -141,7 +141,7 @@ class Play extends AvonCommand {
                     });
 
                     if (!result?.tracks?.length) {
-                        return editMsg(searchingMsg, `**${client.emoji.warning} | No results found for \`${query}\` using ${selectedEngine.label}.**`);
+                        return editMsg(searchingMsg, `**${client.emoji.cross} | No results found for \`${query}\` using ${selectedEngine.label}.**`);
                     }
 
                     if (result.type === `PLAYLIST`) {

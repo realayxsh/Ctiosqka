@@ -65,7 +65,7 @@ async function executeSlash(client, interaction, access) {
         const disabled = await client.data.get(`disabled_channel_${interaction.guild.id}_${interaction.channelId}`);
         const canEnable = ['disablechannel', 'enablechannel'].includes(name) && member.permissions.has(PermissionsBitField.Flags.ManageChannels);
         if (disabled === 'disabled' && !isOwner && !canEnable) {
-            return interaction.editReply(response(`${client.emoji.warning} | Commands are disabled in this channel.`));
+            return interaction.editReply(response(`${client.emoji.cross} | Commands are disabled in this channel.`));
         }
         const player = client.poru.players.get(interaction.guild.id);
         if (name === 'filter') {
@@ -94,9 +94,9 @@ async function executeSlash(client, interaction, access) {
             }
             const id = chosen === 'clearfilters' ? 'none' : chosen;
             if (id !== 'none' && !Object.hasOwn(PRESETS, id)) return interaction.editReply(response('Unknown filter.'));
-            if (!player?.queue.current) return interaction.editReply(response(`${client.emoji.warning} | Nothing is playing right now.`));
+            if (!player?.queue.current) return interaction.editReply(response(`${client.emoji.cross} | Nothing is playing right now.`));
             if (!member.voice.channelId || member.voice.channelId !== interaction.guild.members.me.voice.channelId) {
-                return interaction.editReply(response(`${client.emoji.warning} | You must be in the same voice channel as me.`));
+                return interaction.editReply(response(`${client.emoji.cross} | You must be in the same voice channel as me.`));
             }
             try {
                 return interaction.editReply(response(filterMessage(await applyFilter(player, id, { toggle: true }), client.emoji)));
@@ -109,20 +109,20 @@ async function executeSlash(client, interaction, access) {
         if (!command || command.ownerOnly) return interaction.editReply(response('This command is not available as a slash command.'));
         const args = slashArguments(interaction, name);
         if (command.inVoice && !member.voice.channelId) {
-            return interaction.editReply(response(`${client.emoji.warning} | You must be connected to a voice channel.`));
+            return interaction.editReply(response(`${client.emoji.cross} | You must be connected to a voice channel.`));
         }
         const botVoice = interaction.guild.members.me.voice;
         if (command.sameVoice && botVoice.channelId && botVoice.channelId !== member.voice.channelId) {
-            return interaction.editReply(response(`${client.emoji.warning} | You must be in the same voice channel as me.`));
+            return interaction.editReply(response(`${client.emoji.cross} | You must be in the same voice channel as me.`));
         }
         if (command.player && !player?.queue.current && !(name === 'lyrics' && args.length)) {
-            return interaction.editReply(response(`${client.emoji.warning} | Nothing is playing right now.`));
+            return interaction.editReply(response(`${client.emoji.cross} | Nothing is playing right now.`));
         }
         const [voted, premium] = await Promise.all([
             isVotingEnabled(client) && command.vote && !command.premium && !isOwner ? access.hasVoted(interaction.user.id, client) : true,
             command.premium ? access.isPremium(client, interaction.guild.id) : true,
         ]);
-        if (!voted) return interaction.editReply(response(`${client.emoji.tick} | Vote required: https://top.gg/bot/${client.user.id}/vote`));
+        if (!voted) return interaction.editReply(response(`${client.emoji.warning} | Vote required: https://top.gg/bot/${client.user.id}/vote`));
         if (!premium) return interaction.editReply(response(
             `${client.emoji.warning} | **__Premium Required__**\n\n` +
             `This command requires Premium for this server.\n` +

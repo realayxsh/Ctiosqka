@@ -26,7 +26,7 @@ class Volume extends AvonCommand {
 
             let vol = Number(args[0]);
             if (isNaN(vol) || vol < 0 || vol > 200) return await send(`${client.emoji.cross} **| Volume must be between 0 and 200**`);
-            if (player.volume === vol) return await send(`${client.emoji.cross} **| Volume is already set to ${vol}%**`);
+            if (player.volume === vol) return await send(`${client.emoji.warning} **| Volume is already set to ${vol}%**`);
 
             // Use the native player volume once. Filter volume is preset headroom,
             // not a second copy of the user's volume percentage.

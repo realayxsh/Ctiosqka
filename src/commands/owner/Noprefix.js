@@ -42,7 +42,7 @@ class Noprefix extends AvonCommand{
                 if(pk === `all`){
                     let db = await client.data2.get(`noprefix_${client.user.id}`);
                     if(!db || db === null) { await client.data2.set(`noprefix_${client.user.id}`, []); db = []; }
-                    if(db.includes(us.id)) return await send(`${client.emoji.tick} | **${us.username}** is already in all-server no prefix`);
+                    if(db.includes(us.id)) return await send(`${client.emoji.warning} | **${us.username}** is already in all-server no prefix`);
                     db.push(us.id);
                     await client.data2.set(`noprefix_${client.user.id}`, db);
                     invalidateNoprefixCache(`global_${client.user.id}`);
@@ -53,7 +53,7 @@ class Noprefix extends AvonCommand{
                     if(!guild) return await send(`${client.emoji.cross} | Please provide a valid server ID`);
                     let db2 = await client.data2.get(`noprefix_${guild.id}`);
                     if(!db2 || db2 === null) { await client.data2.set(`noprefix_${guild.id}`, []); db2 = []; }
-                    if(db2.includes(us.id)) return await send(`${client.emoji.cross} | **${us.username}** is already in **${guild.name}**'s no prefix`);
+                    if(db2.includes(us.id)) return await send(`${client.emoji.warning} | **${us.username}** is already in **${guild.name}**'s no prefix`);
                     db2.push(us.id);
                     await client.data2.set(`noprefix_${guild.id}`, db2);
                     invalidateNoprefixCache(`guild_${guild.id}`);

@@ -66,7 +66,7 @@ class AvonInteractions extends AvonClientEvents{
 
                 if(interaction.customId === `pl_lyrics`){
                     if(!player || !player.queue.current)
-                        return interaction.reply(cv2(`${this.client.emoji.warning} | Nothing is playing right now.`, true));
+                        return interaction.reply(cv2(`${this.client.emoji.cross} | Nothing is playing right now.`, true));
                     const isOwner = this.client.config.owners.includes(interaction.user.id);
                     if(!isOwner){
                         const voted = await hasVoted(interaction.user.id, this.client);
@@ -74,7 +74,7 @@ class AvonInteractions extends AvonClientEvents{
                             flags: [MessageFlags.IsComponentsV2, MessageFlags.Ephemeral],
                             components: [
                                 new ContainerBuilder().addTextDisplayComponents(new TextDisplayBuilder().setContent(
-                                    `${this.client.emoji.tick} | **Vote Required** — [Click here](https://top.gg/bot/1097475016880304180/vote) to vote and unlock lyrics!`
+                                    `${this.client.emoji.warning} | **Vote Required** — [Click here](https://top.gg/bot/1097475016880304180/vote) to vote and unlock lyrics!`
                                 )),
                                 new ActionRowBuilder().addComponents(new ButtonBuilder().setStyle(ButtonStyle.Link).setLabel(`Vote on Top.gg`).setURL(`https://top.gg/bot/1097475016880304180/vote`))
                             ]
@@ -110,7 +110,7 @@ class AvonInteractions extends AvonClientEvents{
                         }
                     } catch(e) {}
                     if (!lyrics) {
-                        return interaction.editReply(cv2(`${this.client.emoji.warning} | No lyrics found for **${track.title}**.\nTry \`+lyrics Artist - Song Name\` for manual search.`));
+                        return interaction.editReply(cv2(`${this.client.emoji.cross} | No lyrics found for **${track.title}**.\nTry \`+lyrics Artist - Song Name\` for manual search.`));
                     }
                     const preview = lyrics.length > 1800 ? lyrics.slice(0, 1800) + '\n...' : lyrics;
                     const thumb = track.thumbnail || this.client.user.displayAvatarURL({ dynamic: true });
@@ -131,13 +131,13 @@ class AvonInteractions extends AvonClientEvents{
                 if(interaction.customId === `pl1`){
                     if(interaction.message.id !== player.data.get('music').id) return interaction.message.delete();
                     if(!interaction.member.voice?.channelId || interaction.member.voice.channelId !== interaction.guild.members.me.voice?.channelId)
-                        return interaction.reply(cv2(`${this.client.emoji.warning} | You cannot use this button until you connect to ${interaction.guild.members.me.voice.channel}`, true));
+                        return interaction.reply(cv2(`${this.client.emoji.cross} | You cannot use this button until you connect to ${interaction.guild.members.me.voice.channel}`, true));
                     player.destroy(); return;
                 }
                 if(interaction.customId === `pl2`){
                     if(interaction.message.id !== player.data.get('music').id) return interaction.message.delete();
                     if(interaction.member.voice.channelId !== interaction.guild.members.me.voice.channelId)
-                        return interaction.reply(cv2(`${this.client.emoji.warning} | You cannot use this button until you connect to ${interaction.guild.members.me.voice.channel}`, true));
+                        return interaction.reply(cv2(`${this.client.emoji.cross} | You cannot use this button until you connect to ${interaction.guild.members.me.voice.channel}`, true));
                     player.pause(!player.paused);
                     const updatedPause = buildNowPlayingComponents(this.client, player);
                     if(updatedPause) return interaction.update(updatedPause);
@@ -146,26 +146,26 @@ class AvonInteractions extends AvonClientEvents{
                 if(interaction.customId === `pl3`){
                     if(interaction.message.id !== player.data.get('music').id) return interaction.message.delete();
                     if(interaction.member.voice.channelId !== interaction.guild.members.me.voice.channelId)
-                        return interaction.reply(cv2(`${this.client.emoji.warning} | You cannot use this button until you connect to ${interaction.guild.members.me.voice.channel}`, true));
+                        return interaction.reply(cv2(`${this.client.emoji.cross} | You cannot use this button until you connect to ${interaction.guild.members.me.voice.channel}`, true));
                     if(player.loop === `queue`){ player.setLoop(`none`); }
                     else { player.setLoop(`queue`); }
                     const updatedLoop = buildNowPlayingComponents(this.client, player);
                     if(updatedLoop) return interaction.update(updatedLoop);
-                    return interaction.reply(cv2(player.loop !== 'none' ? `${this.client.emoji.tick} | **Loop enabled**` : `${this.client.emoji.cross} | **Loop disabled**`, true));
+                    return interaction.reply(cv2(`${this.client.emoji.tick} | **Loop ${player.loop !== 'none' ? 'enabled' : 'disabled'}**`, true));
                 }
                 if(interaction.customId === `pl4`){
                     if(interaction.message.id !== player.data.get('music').id) return interaction.message.delete();
                     if(interaction.member.voice.channelId !== interaction.guild.members.me.voice.channelId)
-                        return interaction.reply(cv2(`${this.client.emoji.warning} | You cannot use this button until you connect to ${interaction.guild.members.me.voice.channel}`, true));
+                        return interaction.reply(cv2(`${this.client.emoji.cross} | You cannot use this button until you connect to ${interaction.guild.members.me.voice.channel}`, true));
                     if(!player.queue.previous || player.queue.previous === null)
-                        return interaction.reply(cv2(`${this.client.emoji.warning} | No previous song available.`, true));
+                        return interaction.reply(cv2(`${this.client.emoji.cross} | No previous song available.`, true));
                     player.queue.unshift(player.queue.previous); player.skip();
                     return interaction.reply(cv2(`${this.client.emoji.previous || this.client.emoji.music} | Playing previous track`, true));
                 }
                 if(interaction.customId === `pl5`){
                     if(interaction.message.id !== player.data.get('music').id) return interaction.message.delete();
                     if(interaction.member.voice.channelId !== interaction.guild.members.me.voice.channelId)
-                        return interaction.reply(cv2(`${this.client.emoji.warning} | You cannot use this button until you connect to ${interaction.guild.members.me.voice.channel}`, true));
+                        return interaction.reply(cv2(`${this.client.emoji.cross} | You cannot use this button until you connect to ${interaction.guild.members.me.voice.channel}`, true));
                     player.skip();
                     return interaction.reply(cv2(`${this.client.emoji.tick} | **Skipped** the track`, true));
                 }
@@ -179,12 +179,12 @@ class AvonInteractions extends AvonClientEvents{
                 await interaction.deferReply({ flags: [MessageFlags.Ephemeral] });
                 const player = this.client.poru.players.get(interaction.guild.id);
                 if(!player || !player.queue.current)
-                    return interaction.editReply(cv2(`${this.client.emoji.warning} | Nothing is playing right now.`));
+                    return interaction.editReply(cv2(`${this.client.emoji.cross} | Nothing is playing right now.`));
                 const disabled = await this.client.data.get(`disabled_channel_${interaction.guild.id}_${interaction.channelId}`);
                 if(disabled === 'disabled' && !this.client.config.owners.includes(interaction.user.id))
-                    return interaction.editReply(cv2(`${this.client.emoji.warning} | Commands are disabled in this channel.`));
+                    return interaction.editReply(cv2(`${this.client.emoji.cross} | Commands are disabled in this channel.`));
                 if(!interaction.member.voice?.channelId || interaction.member.voice.channelId !== interaction.guild.members.me.voice?.channelId)
-                    return interaction.editReply(cv2(`${this.client.emoji.warning} | You must be in the same voice channel as me.`));
+                    return interaction.editReply(cv2(`${this.client.emoji.cross} | You must be in the same voice channel as me.`));
 
                 const selected = interaction.values[0] === 'clearfilters' ? 'none' : interaction.values[0];
                 if(selected !== 'none' && !Object.hasOwn(PRESETS, selected))
