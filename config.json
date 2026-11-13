@@ -30,7 +30,7 @@
     "logChannelId" : "1509534175663755365",
     "spotifySecret" : "d9662351f3c949258af5dcaf30f3b446",
     "topggapi" : "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjEwOTc0NzUwMTY4ODAzMDQxODAiLCJib3QiOnRydWUsImlhdCI6MTcwNjc4NzMzN30.nvphHRcVxU5iQee_LHXDnNeUVvLMXWkyU1KJOOoyDog",
-    "server" : "https://discord.gg/FpWgcjCKaH",
+    "server" : "https://discord.gg/radiomusic",
     "mongourl5" : "mongodb+srv://ayxsh:ayxsh@cluster0.n3opc6g.mongodb.net/?appName=Cluster0",
     "mongourl6" : "mongodb+srv://ayxsh:ayxsh@cluster0.n3opc6g.mongodb.net/?appName=Cluster0",
     "nodes" : [
