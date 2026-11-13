@@ -10,12 +10,12 @@ class Invite extends AvonCommand{
             .addSectionComponents(
                 new SectionBuilder()
                     .addTextDisplayComponents(new TextDisplayBuilder().setContent(
-                        `Click **[here](https://discord.com/api/oauth2/authorize?client_id=${client.user.id}&permissions=2184571968&scope=bot%20applications.commands)** to invite **${client.user.username}** to your server!`
+                        `Click **[here](https://discord.com/oauth2/authorize?client_id=1570724994919563304&permissions=274881399809&integration_type=0&scope=bot)** to invite **${client.user.username}** to your server!`
                     ))
                     .setThumbnailAccessory(new ThumbnailBuilder().setURL(client.user.displayAvatarURL()))
             );
         const row = new ActionRowBuilder().addComponents(
-            new ButtonBuilder().setStyle(ButtonStyle.Link).setURL(`https://discord.com/api/oauth2/authorize?client_id=${client.user.id}&permissions=2184571968&scope=bot%20applications.commands`).setLabel(`Invite`)
+            new ButtonBuilder().setStyle(ButtonStyle.Link).setURL(`https://discord.com/oauth2/authorize?client_id=1570724994919563304&permissions=274881399809&integration_type=0&scope=bot`).setLabel(`Invite`)
         );
         return message.channel.send({ flags: [MessageFlags.IsComponentsV2], components: [container, row] });
     }
