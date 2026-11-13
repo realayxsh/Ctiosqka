@@ -68,7 +68,7 @@ class Help extends AvonCommand{
                 )
                 .addSeparatorComponents(new SeparatorBuilder().setDivider(true))
                 .addTextDisplayComponents(new TextDisplayBuilder().setContent(
-                    musicCmds.sort((a,b) => a.name.localeCompare(b.name)).map(r => `${client.emoji.music} \`${commandName(r)}\``).join(`\n`) || 'None'
+                    musicCmds.sort((a,b) => a.name.localeCompare(b.name)).map(r => `\`${commandName(r)}\``).join(`  `) || 'None'
                 ));
 
             const c2 = new ContainerBuilder()
@@ -106,7 +106,7 @@ class Help extends AvonCommand{
                 )
                 .addSeparatorComponents(new SeparatorBuilder().setDivider(true))
                 .addTextDisplayComponents(new TextDisplayBuilder().setContent(
-                    infoCmds.sort((a,b) => a.name.localeCompare(b.name)).map(r => `${client.emoji.info} \`${commandName(r)}\``).join(`\n`) || 'None'
+                    infoCmds.sort((a,b) => a.name.localeCompare(b.name)).map(r => `\`${commandName(r)}\``).join(`  `) || 'None'
                 ));
 
             const c5 = new ContainerBuilder()

@@ -155,6 +155,20 @@ test('help lists every filter in All Commands and the Filters category without p
     }
 });
 
+test('help Music and Information list commands side by side like All Commands', async () => {
+    const f = fixture();
+    for (const [name, cat] of [['queue', 'music'], ['pause', 'music'], ['help', 'info'], ['ping', 'info']]) {
+        f.client.AvonCommands.commands.set(name, { name, cat });
+    }
+    await new Help(f.client).run(f.client, f.message, [], '+');
+    for (const [customId, expected] of [['m1', '`pause`  `play`  `queue`'], ['m4', '`help`  `ping`']]) {
+        let payload;
+        await f.events.collect({ isButton: () => true, customId, update: async data => { payload = data; } });
+        const components = payload.components[0].toJSON().components;
+        assert.equal(components.at(-1).content, expected);
+    }
+});
+
 test('help sections show a short usage note while the home menu stays uncluttered', async () => {
     const f = fixture();
     await new Help(f.client).run(f.client, f.message, [], '!');
