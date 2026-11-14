@@ -160,14 +160,12 @@ test('help lists every filter in All Commands and the Filters category without p
         const filterSection = customId === 'm2'
             ? textDisplays.at(-1)
             : textDisplays.find(content => content.startsWith(`${emoji.filters} **Filters [`));
-        const commandLines = filterSection.split('\n').filter(line =>
-            filters.some(command => [
-                `\`${command.name}\``,
-                `${emoji.filters} \`${command.name}\``,
-            ].includes(line.trim()))
-        );
-        assert.equal(commandLines.length, filters.length);
-        assert(commandLines.every(line => !line.includes(',') && (line.match(/`[^`]+`/g) || []).length === 1));
+        const expectedListing = filters
+            .map(command => command.name)
+            .sort((a, b) => a.localeCompare(b))
+            .map(name => `\`${name}\``)
+            .join(', ');
+        assert.equal(filterSection.split('\n').filter(line => line.trim() === expectedListing).length, 1);
     }
 });
 

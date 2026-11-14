@@ -86,7 +86,7 @@ class Help extends AvonCommand{
                 .addSeparatorComponents(new SeparatorBuilder().setDivider(true))
                 .addTextDisplayComponents(new TextDisplayBuilder().setContent(
                     `Use \`filter\` in the slash menu to choose an effect, or run an effect name with your prefix.\n\n` +
-                    (filterCmds.sort((a,b) => a.name.localeCompare(b.name)).map(r => `${client.emoji.filters} \`${commandName(r)}\``).join(`\n`) || 'None')
+                    (filterCmds.sort((a,b) => a.name.localeCompare(b.name)).map(r => `\`${commandName(r)}\``).join(`, `) || 'None')
                 ));
 
             const c3 = new ContainerBuilder()
@@ -130,7 +130,7 @@ class Help extends AvonCommand{
                 .addTextDisplayComponents(new TextDisplayBuilder().setContent(
                     `${client.emoji.filters} **Filters [${filterCmds.size}]**\n` +
                     `\`filter\` — Choose an audio effect in the slash menu.\n` +
-                    filterCmds.sort((a,b) => a.name.localeCompare(b.name)).map(r => `\`${commandName(r)}\``).join(`\n`)
+                    filterCmds.sort((a,b) => a.name.localeCompare(b.name)).map(r => `\`${commandName(r)}\``).join(`, `)
                 ))
                 .addSeparatorComponents(new SeparatorBuilder().setDivider(false))
                 .addTextDisplayComponents(new TextDisplayBuilder().setContent(
