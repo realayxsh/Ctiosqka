@@ -12,7 +12,7 @@ const wh = require('../../structures/webhook');
 
 class Filter extends AvonCommand {
     get name() { return 'filter'; }
-    get aliases() { return []; }
+    get aliases() { return ['filters']; }
     get cat() { return 'filters'; }
     get premium() { return true; }
 
