@@ -1,12 +1,13 @@
 const { ContainerBuilder, TextDisplayBuilder, SectionBuilder, ThumbnailBuilder, MessageFlags } = require("discord.js");
 const AvonCommand = require("../../structures/avonCommand");
+const { isOwner } = require('../../structures/ownerMessages');
 
 class ListPremium extends AvonCommand{
     get name(){ return 'listpremium' }
     get aliases(){ return ['premiumlist','listprem','plists']; }
     async run(client, message, args, prefix){
         try{
-            if(!client.config.owners.includes(message.author.id)) return;
+            if(!isOwner(client, message.author.id)) return;
 
             const send = (text, thumb) => {
                 const section = new SectionBuilder()

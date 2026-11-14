@@ -1,13 +1,14 @@
 const { ContainerBuilder, TextDisplayBuilder, SectionBuilder, ThumbnailBuilder, SeparatorBuilder, MessageFlags } = require("discord.js");
 const AvonCommand = require("../../structures/avonCommand");
 const os = require("os");
+const { isOwner } = require('../../structures/ownerMessages');
 
 class Stats extends AvonCommand{
     get name(){ return 'stats' }
     get aliases(){ return ['botstats','statistics','botinfo']; }
     async run(client, message, args, prefix){
         try{
-            if(!client.config.owners.includes(message.author.id)) return;
+            if(!isOwner(client, message.author.id)) return;
 
             const totalServers  = client.guilds.cache.size;
             const totalUsers    = client.guilds.cache.reduce((a,b) => a + b.memberCount, 0);

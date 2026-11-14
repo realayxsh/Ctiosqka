@@ -1,5 +1,6 @@
 const { ContainerBuilder, TextDisplayBuilder, SectionBuilder, ThumbnailBuilder, SeparatorBuilder, MessageFlags } = require("discord.js");
 const AvonCommand = require("../../structures/avonCommand");
+const { isOwner } = require('../../structures/ownerMessages');
 const { getStoredNoPrefixEntries, entryUserId, entryExpiryText, activeEntries } = require('../../structures/noprefixAccess');
 
 class NpList extends AvonCommand{
@@ -7,8 +8,7 @@ class NpList extends AvonCommand{
     get aliases(){ return ['noprefixlist','npl']; }
     async run(client, message, args, prefix){
         try{
-            let ok = [...client.config.owners, ...(client.config.coowners || [])];
-            if(!ok.includes(message.author.id)) return;
+            if(!isOwner(client, message.author.id)) return;
 
             const send = (text, thumb) => {
                 const container = new ContainerBuilder();

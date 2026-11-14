@@ -8,3 +8,9 @@ Keep both prefix and slash commands for public use, including `+play` and `+help
 **Why:** The user explicitly chose to keep prefix and slash commands together when changing bot accounts, and asked to keep owner commands such as `genpremium` as no-prefix commands.
 
 **How to apply:** Preserve owner-specific authorization checks. Support owner no-prefix DMs and bot mentions in servers. Keep bare no-prefix guild invocation when message text is available, but never promise that bot-owner status bypasses Discord's Message Content restriction.
+
+All configured co-owners should have access to every owner command, including owner management and JavaScript evaluation.
+
+**Why:** The user explicitly chose to allow co-owners to run all owner commands.
+
+**How to apply:** Use the shared owner check for every owner command; do not add command-specific primary-owner-only gates.

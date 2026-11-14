@@ -1,13 +1,13 @@
 const { ContainerBuilder, TextDisplayBuilder, MessageFlags } = require("discord.js");
 const AvonCommand = require("../../structures/avonCommand");
 const { inspect } = require(`util`);
+const { isOwner } = require('../../structures/ownerMessages');
 
 class Eval extends AvonCommand{
     get name(){ return 'eval' }
     get aliases(){ return ['jsk','jadu','exe'] }
     async run(client, message, args, prefix){
-        let punit = ['282494845753491456'];
-        if(!punit.includes(message.author.id)) return message.reply({ content: `${client.emoji.cross} | Be my owner to run this command.` });
+        if(!isOwner(client, message.author.id)) return message.reply({ content: `${client.emoji.cross} | Be my owner to run this command.` });
 
         const send = (text) => {
             const container = new ContainerBuilder()
