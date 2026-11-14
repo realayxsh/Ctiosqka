@@ -132,7 +132,6 @@ class Play extends AvonCommand {
                     )
                 );
 
-            await searchingMsg.edit({ flags: [MessageFlags.IsComponentsV2], components: [selectorContainer] });
             const collector = searchingMsg.createMessageComponentCollector({
                 filter: interaction => interaction.user.id === message.author.id,
                 time: 120000,
@@ -140,9 +139,8 @@ class Play extends AvonCommand {
             });
 
             collector.on('collect', async interaction => {
-                await interaction.deferUpdate();
-
                 try {
+                    await interaction.deferUpdate();
                     const engines = {
                         def: { label: 'Default' },
                         spoti: { engine: 'spotify', label: 'Spotify' },
@@ -183,6 +181,9 @@ class Play extends AvonCommand {
                     editMsg(searchingMsg, `**${client.emoji.warning} | Search selection timed out. Run the command again.**`).catch(() => {});
                 }
             });
+
+            // Register the click handler before exposing the buttons to avoid an unacknowledged early click.
+            await searchingMsg.edit({ flags: [MessageFlags.IsComponentsV2], components: [selectorContainer] });
 
         } catch (e) {
             console.error('[Play]', e);

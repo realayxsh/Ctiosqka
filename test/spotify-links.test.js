@@ -196,6 +196,60 @@ test('first text query shows the engine picker before voice connects', async () 
     connect(f.player);
 });
 
+test('source buttons are listening before display and call their matching providers', async () => {
+    const sources = [
+        ['def', undefined],
+        ['spoti', 'spotify'],
+        ['deez', 'deezer'],
+        ['sc', 'soundcloud'],
+    ];
+
+    for (const [customId, expectedEngine] of sources) {
+        const f = playFixture();
+        const events = [];
+        const track = { title: 'Source test', uri: 'https://example.com/song', length: 180000 };
+        let searchOptions;
+        let collect;
+        f.player.search = async (_query, options) => {
+            searchOptions = options;
+            return { type: 'TRACK', tracks: [track] };
+        };
+        f.message.channel.send = async payload => {
+            f.sent.push(payload);
+            return {
+                edit: async payload => {
+                    events.push('display');
+                    f.edits.push(payload);
+                },
+                createMessageComponentCollector: () => ({
+                    on: (event, callback) => {
+                        if (event === 'collect') {
+                            events.push('listen');
+                            collect = callback;
+                        }
+                    },
+                }),
+            };
+        };
+
+        await new Play(f.client).run(f.client, f.message, ['source test song'], '+');
+        assert.deepEqual(events, ['listen', 'display']);
+        const interaction = f.edits[0].components[0].toJSON().components
+            .flatMap(component => component.components || [])
+            .find(button => button.custom_id === customId);
+        assert(interaction, `Missing source button ${customId}`);
+        await collect({
+            customId,
+            user: f.message.author,
+            deferUpdate: async () => {},
+        });
+
+        assert.equal(searchOptions.engine, expectedEngine);
+        assert.deepEqual(f.queued, [track]);
+        assert.match(contents(f.edits.at(-1)), /Added Song to Queue/);
+    }
+});
+
 test('text search retries once when the provider briefly returns no tracks', async () => {
     const f = playFixture();
     const track = { title: 'Found after retry', uri: 'https://example.com/song', length: 180000 };
