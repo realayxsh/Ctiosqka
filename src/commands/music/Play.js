@@ -2,6 +2,7 @@ const { ContainerBuilder, TextDisplayBuilder, SectionBuilder, ThumbnailBuilder, 
 const ms = require("ms");
 const AvonCommand = require(`../../structures/avonCommand`);
 const { musicLinkSource } = require('../../audio/spotify');
+const { searchBestAvailableAudio } = require('../../audio/searchQuality');
 const wh = require('../../structures/webhook');
 const { registerPlaySearchSession } = require('../../structures/playSearchSessions');
 
@@ -65,11 +66,14 @@ class Play extends AvonCommand {
                     volume: 100,
                     shardId: message.guild.shardId
                 })).then(player => ({ player }), error => ({ error }));
-            const searchWithPlayer = async options => {
+            const searchWithPlayer = async (options, { preferMusicAudio = false } = {}) => {
                 // Kazagumo can search without an established Discord voice session.
-                const search = () => existingPlayer
-                    ? existingPlayer.search(query, options)
-                    : client.poru.search(query, options);
+                const runSearch = (searchQuery, searchOptions) => existingPlayer
+                    ? existingPlayer.search(searchQuery, searchOptions)
+                    : client.poru.search(searchQuery, searchOptions);
+                const search = () => preferMusicAudio
+                    ? searchBestAvailableAudio(runSearch, query, options)
+                    : runSearch(query, options);
                 const [ready, firstResult] = await Promise.all([
                     playerReady,
                     search()
@@ -151,7 +155,7 @@ class Play extends AvonCommand {
                     const { player, result } = await searchWithPlayer({
                         ...(selectedEngine.engine ? { engine: selectedEngine.engine } : {}),
                         requester: message.author
-                    });
+                    }, { preferMusicAudio: !selectedEngine.engine });
 
                     if (!result?.tracks?.length) {
                         return editMsg(searchingMsg, `**${client.emoji.cross} | No results found for \`${query}\` using ${selectedEngine.label}.**`);

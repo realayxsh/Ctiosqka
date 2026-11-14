@@ -112,6 +112,14 @@ test('spatial presets use distinct headphone rotation rates without a mono mixer
     assert.match(filterMessage({ id: 'dolbyatmos', ...PRESETS.dolbyatmos }, emoji), /More pronounced left\/right stereo movement/);
 });
 
+test('clean playback baseline uses unity volume and no EQ or audio effects', () => {
+    assert.deepEqual(cleanFilters(), {
+        volume: 1, equalizer: [], karaoke: null, timescale: null,
+        tremolo: null, vibrato: null, rotation: null, distortion: null,
+        channelMix: null, lowPass: null,
+    });
+});
+
 test('switching, toggling off, and clearing fully reset old effects and every state flag', async () => {
     const { player, requests } = fixture();
     await applyFilter(player, 'dolbyatmos');

@@ -199,7 +199,7 @@ test('first text query shows the engine picker before voice connects', async () 
 });
 
 test('source buttons acknowledge and search with the selected provider', async () => {
-    for (const [buttonId, engine] of [['def', undefined], ['spoti', 'spotify'], ['deez', 'deezer'], ['sc', 'soundcloud']]) {
+    for (const [buttonId, engine] of [['def', 'youtube_music'], ['spoti', 'spotify'], ['deez', 'deezer'], ['sc', 'soundcloud']]) {
         const f = playFixture();
         const messageId = `source-${buttonId}`;
         const track = { title: 'Search result', uri: 'https://example.com/song', length: 120000 };
@@ -231,6 +231,35 @@ test('source buttons acknowledge and search with the selected provider', async (
         assert.equal(searchOptions.engine, engine);
         assert.deepEqual(f.queued, [track]);
     }
+});
+
+test('Default source falls back to YouTube when YouTube Music has no result', async () => {
+    const f = playFixture();
+    const messageId = 'source-quality-fallback';
+    const track = { title: 'Fallback result', uri: 'https://example.com/song', length: 120000 };
+    const engines = [];
+    f.player.search = async (query, options) => {
+        engines.push(options.engine);
+        return options.engine === 'youtube_music'
+            ? { type: 'SEARCH', tracks: [] }
+            : { type: 'TRACK', tracks: [track] };
+    };
+    f.message.channel.send = async payload => {
+        f.sent.push(payload);
+        return { id: messageId, edit: async payload => f.edits.push(payload) };
+    };
+
+    await new Play(f.client).run(f.client, f.message, ['Artist - Song Name'], '+');
+    await new Interactions(f.client).run({
+        isButton: () => true,
+        customId: 'play_source_def',
+        user: f.message.author,
+        message: { id: messageId },
+        deferUpdate: async () => {},
+    });
+
+    assert.deepEqual(engines, ['youtube_music', 'youtube']);
+    assert.deepEqual(f.queued, [track]);
 });
 
 test('/play preserves the submitted song query through the source-button click', async () => {
