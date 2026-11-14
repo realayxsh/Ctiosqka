@@ -3,6 +3,7 @@ const { ActionRowBuilder, ContainerBuilder, TextDisplayBuilder, StringSelectMenu
 const { PRESETS, FILTER_OPTIONS, applyFilter, filterMessage, filterFailure } = require('../audio/filters');
 const { OWNER_COMMAND_NAMES, createDefinitions, slashArguments } = require('./catalog');
 const wh = require('../structures/webhook');
+const { isChannelDisabled } = require('../structures/disabledChannelCache');
 const { isVotingEnabled } = require('../structures/voting');
 
 const publicNames = new Set([...createDefinitions().map(command => command.name), 'vote']);
@@ -62,9 +63,9 @@ async function executeSlash(client, interaction, access) {
         if (!member?.voice || typeof member.permissions?.has !== 'function') {
             member = await interaction.guild.members.fetch(interaction.user.id);
         }
-        const disabled = await client.data.get(`disabled_channel_${interaction.guild.id}_${interaction.channelId}`);
+        const disabled = await isChannelDisabled(client, interaction.guild.id, interaction.channelId);
         const canEnable = ['disablechannel', 'enablechannel'].includes(name) && member.permissions.has(PermissionsBitField.Flags.ManageChannels);
-        if (disabled === 'disabled' && !isOwner && !canEnable) {
+        if (disabled && !isOwner && !canEnable) {
             return interaction.editReply(response(`${client.emoji.cross} | Commands are disabled in this channel.`));
         }
         const player = client.poru.players.get(interaction.guild.id);

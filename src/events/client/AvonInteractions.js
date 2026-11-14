@@ -26,6 +26,7 @@ async function hasVoted(userId, client) {
 }
 
 const { isPremium } = require('../../structures/premiumAccess');
+const { isChannelDisabled } = require('../../structures/disabledChannelCache');
 
 const { PRESETS, applyFilter, filterMessage, filterFailure } = require('../../audio/filters');
 
@@ -180,8 +181,8 @@ class AvonInteractions extends AvonClientEvents{
                 const player = this.client.poru.players.get(interaction.guild.id);
                 if(!player || !player.queue.current)
                     return interaction.editReply(cv2(`${this.client.emoji.cross} | Nothing is playing right now.`));
-                const disabled = await this.client.data.get(`disabled_channel_${interaction.guild.id}_${interaction.channelId}`);
-                if(disabled === 'disabled' && !this.client.config.owners.includes(interaction.user.id))
+                const disabled = await isChannelDisabled(this.client, interaction.guild.id, interaction.channelId);
+                if(disabled && !this.client.config.owners.includes(interaction.user.id))
                     return interaction.editReply(cv2(`${this.client.emoji.cross} | Commands are disabled in this channel.`));
                 if(!interaction.member.voice?.channelId || interaction.member.voice.channelId !== interaction.guild.members.me.voice?.channelId)
                     return interaction.editReply(cv2(`${this.client.emoji.cross} | You must be in the same voice channel as me.`));

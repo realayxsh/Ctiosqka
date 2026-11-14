@@ -7,6 +7,7 @@ const wh = require('./webhook');
 const { isVotingEnabled } = require('./voting');
 const { isOwner, runOwnerMessage } = require('./ownerMessages');
 const { WEBSITE_URL } = require('./brandingLinks');
+const { isChannelDisabled } = require('./disabledChannelCache');
 const table = new ascii().setHeading('Avon Commands', 'Status');
 const top = require(`@top-gg/sdk`);
 const voteApi = new top.Api(process.env.topggapi || config.topggapi);
@@ -162,10 +163,10 @@ class AvonCommands extends EventEmitter {
 
             // ── Disabled channel check ──
             const disabledKey = `disabled_channel_${message.guild.id}_${message.channel.id}`;
-            const channelDisabled = await this.client.data.get(disabledKey);
+            const channelDisabled = await isChannelDisabled(this.client, message.guild.id, message.channel.id);
             const canEnable = ['disablechannel', 'enablechannel'].includes(avonCommand.name) &&
                 message.member.permissions.has(PermissionsBitField.Flags.ManageChannels);
-            if(channelDisabled === `disabled` && !this.client.config.owners.includes(message.author.id) && !canEnable) return;
+            if(channelDisabled && !this.client.config.owners.includes(message.author.id) && !canEnable) return;
 
             if(!message.guild.members.me.permissionsIn(message.channel).has(PermissionsBitField.Flags.ViewChannel)) return;
             if(!message.guild.members.me.permissionsIn(message.channel).has(PermissionsBitField.Flags.SendMessages)) return message.author.send({ content: `${this.client.emoji.cross} | I don't have **Send Messages** permissions in that channel` }).catch(e => null);

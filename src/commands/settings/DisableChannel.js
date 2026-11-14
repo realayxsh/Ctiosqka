@@ -1,5 +1,6 @@
 const { PermissionsBitField, ContainerBuilder, TextDisplayBuilder, SectionBuilder, ThumbnailBuilder, MessageFlags } = require("discord.js");
 const AvonCommand = require("../../structures/avonCommand");
+const { invalidateDisabledChannel } = require('../../structures/disabledChannelCache');
 
 class DisableChannel extends AvonCommand{
     get name(){ return 'disablechannel'; }
@@ -28,14 +29,17 @@ class DisableChannel extends AvonCommand{
         if (this.name === 'enablechannel') {
             if (current !== 'disabled') return send(`${client.emoji.warning} | Bot commands are already **enabled** in ${target}`);
             await client.data.delete(key);
+            invalidateDisabledChannel(client, message.guild.id, target.id);
             return send(`${client.emoji.tick} | **Enabled** bot commands in ${target}`);
         }
 
         if(current === `disabled`){
             await client.data.delete(key);
+            invalidateDisabledChannel(client, message.guild.id, target.id);
             return send(`${client.emoji.tick} | **Enabled** bot commands in ${target}`);
         } else {
             await client.data.set(key, `disabled`);
+            invalidateDisabledChannel(client, message.guild.id, target.id);
             return send(`${client.emoji.tick} | **Disabled** bot commands in ${target}`);
         }
     }

@@ -132,6 +132,7 @@ test('resolved users and channels are available through all message adapter coll
 });
 
 test('voice, paid access, and disabled-channel checks run before public handlers', async () => {
+    const { invalidateDisabledChannel } = require('../src/structures/disabledChannelCache');
     const { client, interaction, access, calls } = fixture('play', {}, { owner: false });
     let invoked = false;
     client.AvonCommands.commands.set('play', { inVoice: true, premium: true, run() { invoked = true; } });
@@ -146,6 +147,7 @@ test('voice, paid access, and disabled-channel checks run before public handlers
     assert.match(texts(calls), /requires Premium/);
     assert.ok(texts(calls).includes(`${emoji.warning} | **__Premium Required__**`));
     client.data.map.set('disabled_channel_guild_channel', 'disabled');
+    invalidateDisabledChannel(client, interaction.guild.id, interaction.channelId);
     await executeSlash(client, interaction, access);
     assert.match(texts(calls), /disabled in this channel/);
     const latest = calls.filter(([type]) => type === 'edit').at(-1)[1];
@@ -191,6 +193,7 @@ test('/enablechannel restores commands and never disables an already enabled cha
 
 test('/enablechannel requires Manage Channels or owner access', async () => {
     const Enable = require('../src/commands/settings/EnableChannel');
+    const { invalidateDisabledChannel } = require('../src/structures/disabledChannelCache');
     const { client, interaction, access, calls } = fixture('enablechannel', {}, { owner: false });
     client.AvonCommands.commands.set('enablechannel', new Enable(client));
     interaction.member.permissions.has = () => false;
@@ -198,6 +201,7 @@ test('/enablechannel requires Manage Channels or owner access', async () => {
     await executeSlash(client, interaction, access);
     assert.equal(client.data.map.get('disabled_channel_guild_channel'), 'disabled');
     client.data.map.clear();
+    invalidateDisabledChannel(client, interaction.guild.id, interaction.channelId);
     await executeSlash(client, interaction, access);
     assert.match(texts(calls), /Manage Channels/);
 });
