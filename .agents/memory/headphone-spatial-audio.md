@@ -7,7 +7,7 @@ The user expects Dolby and 8D effects to move sound between the left and right h
 
 **Why:** The user reported that sound in headphones should go "here and there," but the filters did not do that.
 
-**How to apply:** Prioritize stereo rotation rather than adding pitch modulation or calling an EQ boost surround sound. Do not claim true Dolby Atmos or true reverb unless the audio server actually provides the required processing.
+**How to apply:** The Dolby-style preset should preserve the original pitch and vocal character while making left/right stereo movement clearly audible. Prioritize stereo rotation rather than pitch modulation or EQ-only effects. Do not claim true Dolby Atmos or reverb unless the audio server provides the required processing.
 
 Preset selection deliberately replaces the previous preset, rather than stacking unrelated settings.
 
