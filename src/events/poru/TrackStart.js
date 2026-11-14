@@ -8,16 +8,11 @@ const wh = require('../../structures/webhook');
 const { buildPlaybackRows } = require('../../structures/playbackControls');
 const { isPremium } = require('../../structures/premiumAccess');
 const { updateVoiceStatus } = require('../../structures/voiceStatus');
-const {
-    cancelPendingNowPlayingAnnouncement,
-    scheduleNowPlayingAnnouncement,
-} = require('../../structures/nowPlayingAnnouncement');
 
 class TrackStart extends AvonClientEvent {
     get name() { return 'playerStart' }
     async run(player, track) {
         wh.music('Track started', player);
-        cancelPendingNowPlayingAnnouncement(player);
         let url = track.uri || '';
         const channel = this.client.channels.cache.get(player.textId);
         let duration = moment.duration(player.queue.current.length).format("hh:mm:ss");
@@ -60,13 +55,8 @@ class TrackStart extends AvonClientEvent {
             .addActionRowComponents(...buildPlaybackRows(this.client, player));
 
         if (channel) {
-            return scheduleNowPlayingAnnouncement(player, track, async () => {
-                const message = await channel.send({
-                    flags: [MessageFlags.IsComponentsV2],
-                    components: [container],
-                });
-                player.data.set('music', message);
-            }, error => wh.error('Now Playing announcement failed', error));
+            return channel.send({ flags: [MessageFlags.IsComponentsV2], components: [container] })
+                .then(x => player.data.set("music", x));
         }
     }
 }
