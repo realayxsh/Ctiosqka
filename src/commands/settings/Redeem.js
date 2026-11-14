@@ -1,19 +1,7 @@
 const { ContainerBuilder, TextDisplayBuilder, SectionBuilder, ThumbnailBuilder, MessageFlags } = require("discord.js");
 const AvonCommand = require("../../structures/avonCommand");
 const { applyPremiumBranding, scheduleExpiry } = require('../../structures/premiumBranding');
-
-const DURATION_MS = {
-    '30d':  30  * 24 * 60 * 60 * 1000,
-    '90d':  90  * 24 * 60 * 60 * 1000,
-    '180d': 180 * 24 * 60 * 60 * 1000,
-    '365d': 365 * 24 * 60 * 60 * 1000,
-    'lifetime': null
-};
-
-const DURATION_LABELS = {
-    '30d': '30 Days', '90d': '90 Days', '180d': '180 Days',
-    '365d': '1 Year', 'lifetime': 'Lifetime'
-};
+const { parsePremiumDuration } = require('../../structures/premiumDuration');
 
 class Redeem extends AvonCommand{
     get name(){ return 'redeem'; }
@@ -60,9 +48,9 @@ class Redeem extends AvonCommand{
             }
 
             let durKey    = typeof entry === 'object' ? (entry.duration || '30d') : '30d';
-            let durMs     = DURATION_MS.hasOwnProperty(durKey) ? DURATION_MS[durKey] : DURATION_MS['30d'];
-            let expiresAt = (durMs === null) ? null : Date.now() + durMs;
-            let label     = DURATION_LABELS[durKey] || '30 Days';
+            let duration  = parsePremiumDuration(durKey) || parsePremiumDuration('30d');
+            let expiresAt = (duration.milliseconds === null) ? null : Date.now() + duration.milliseconds;
+            let label     = duration.label;
 
             let remaining = codes.filter(c => (typeof c === 'object' ? c.code : c) !== code);
             await client.data3.set(`premium_codes`, remaining);

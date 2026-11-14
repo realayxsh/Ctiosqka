@@ -1,36 +1,7 @@
 const { ContainerBuilder, TextDisplayBuilder, SectionBuilder, ThumbnailBuilder, MessageFlags } = require("discord.js");
 const AvonCommand = require("../../structures/avonCommand");
 const { v4: uuidv4 } = require("uuid");
-
-const DURATIONS = {
-    '30d':      30  * 24 * 60 * 60 * 1000,
-    '1m':       30  * 24 * 60 * 60 * 1000,
-    '90d':      90  * 24 * 60 * 60 * 1000,
-    '3m':       90  * 24 * 60 * 60 * 1000,
-    '180d':     180 * 24 * 60 * 60 * 1000,
-    '6m':       180 * 24 * 60 * 60 * 1000,
-    '365d':     365 * 24 * 60 * 60 * 1000,
-    '1y':       365 * 24 * 60 * 60 * 1000,
-    '1year':    365 * 24 * 60 * 60 * 1000,
-    'year':     365 * 24 * 60 * 60 * 1000,
-    'lifetime': null,
-    'forever':  null,
-    'perm':     null
-};
-
-const DURATION_LABELS = {
-    '30d': '30 Days', '1m': '30 Days',
-    '90d': '90 Days', '3m': '90 Days',
-    '180d': '180 Days', '6m': '180 Days',
-    '365d': '1 Year', '1y': '1 Year', '1year': '1 Year', 'year': '1 Year',
-    'lifetime': 'Lifetime', 'forever': 'Lifetime', 'perm': 'Lifetime'
-};
-
-const CANONICAL = {
-    '1m': '30d', '3m': '90d', '6m': '180d',
-    '1y': '365d', '1year': '365d', 'year': '365d',
-    'forever': 'lifetime', 'perm': 'lifetime'
-};
+const { parseGenerationArgs } = require('../../structures/premiumDuration');
 
 class GenPremium extends AvonCommand{
     get name(){ return 'genpremium' }
@@ -40,14 +11,18 @@ class GenPremium extends AvonCommand{
             const allowed = [...client.config.owners, ...(client.config.coowners || [])];
             if(!allowed.includes(message.author.id)) return;
 
-            let amount = 1;
-            let durKey = '30d';
-            for(let a of args){
-                const al = a.toLowerCase();
-                if(DURATIONS.hasOwnProperty(al)) durKey = CANONICAL[al] || al;
-                else { let n = parseInt(a); if(!isNaN(n) && /^\d+$/.test(a.trim())) amount = n; }
+            const parsed = parseGenerationArgs(args);
+            if (parsed.error) {
+                const container = new ContainerBuilder()
+                    .addTextDisplayComponents(new TextDisplayBuilder().setContent(
+                        `${client.emoji.cross} | ${parsed.error}\n\n` +
+                        `Usage: \`${prefix}genprem [amount] <duration>\`\n` +
+                        `Examples: \`${prefix}genprem 1m\`, \`${prefix}genprem 2m\`, \`${prefix}genprem 1y\`, \`${prefix}genprem lifetime\`, \`${prefix}genprem 5 2m\``
+                    ));
+                return message.channel.send({ flags: [MessageFlags.IsComponentsV2], components: [container] });
             }
-            if(amount > 10) amount = 10;
+            const { amount, duration } = parsed;
+            const durKey = duration.key;
 
             let codes     = await client.data3.get(`premium_codes`) || [];
             let generated = [];
@@ -60,7 +35,7 @@ class GenPremium extends AvonCommand{
 
             await client.data3.set(`premium_codes`, codes);
 
-            let label    = DURATION_LABELS[durKey];
+            let label    = duration.label;
             let codeList = generated.map((c, i) => `\`${i+1}\` \`${c}\``).join('\n');
 
             const container = new ContainerBuilder()
