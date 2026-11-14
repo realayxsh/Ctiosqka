@@ -1,14 +1,13 @@
 const { ContainerBuilder, TextDisplayBuilder, SectionBuilder, ThumbnailBuilder, MessageFlags } = require("discord.js");
 const AvonCommand = require("../../structures/avonCommand");
 const { restorePremiumBranding, cancelExpiry } = require('../../structures/premiumBranding');
-const { isOwner } = require('../../structures/ownerMessages');
 
 class RevokePremium extends AvonCommand{
     get name(){ return 'revokepremium' }
     get aliases(){ return ['removepremium','remprem','revokeprem']; }
     async run(client, message, args, prefix){
         try{
-            if(!isOwner(client, message.author.id)) return;
+            if(!client.config.owners.includes(message.author.id)) return;
 
             const send = (text, thumb) => {
                 const container = new ContainerBuilder();

@@ -2,14 +2,14 @@ const { ContainerBuilder, TextDisplayBuilder, SectionBuilder, ThumbnailBuilder, 
 const AvonCommand = require("../../structures/avonCommand");
 const { v4: uuidv4 } = require("uuid");
 const { parseGenerationArgs } = require('../../structures/premiumDuration');
-const { isOwner } = require('../../structures/ownerMessages');
 
 class GenPremium extends AvonCommand{
     get name(){ return 'genpremium' }
     get aliases(){ return ['generatepremium','genprem','createpremium']; }
     async run(client, message, args, prefix){
         try{
-            if(!isOwner(client, message.author.id)) return;
+            const allowed = [...client.config.owners, ...(client.config.coowners || [])];
+            if(!allowed.includes(message.author.id)) return;
 
             const parsed = parseGenerationArgs(args);
             if (parsed.error) {

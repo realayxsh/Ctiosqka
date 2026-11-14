@@ -4,7 +4,6 @@ const {
     StringSelectMenuBuilder, StringSelectMenuOptionBuilder, MessageFlags
 } = require("discord.js");
 const AvonCommand = require("../../structures/avonCommand");
-const { isOwner } = require('../../structures/ownerMessages');
 
 const PAGE_SIZE = 8;
 
@@ -76,7 +75,7 @@ class ServerList extends AvonCommand {
 
     async run(client, message, args, prefix) {
         try {
-            if (!isOwner(client, message.author.id)) return;
+            if (!client.config.owners.includes(message.author.id)) return;
 
             // Collect guilds across all shards/clusters
             let allGuilds;

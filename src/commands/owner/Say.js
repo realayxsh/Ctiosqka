@@ -11,7 +11,6 @@ const {
     ChannelType
 } = require("discord.js");
 const AvonCommand = require("../../structures/avonCommand");
-const { isOwner } = require('../../structures/ownerMessages');
 
 class Say extends AvonCommand {
     get name() { return "say"; }
@@ -19,7 +18,10 @@ class Say extends AvonCommand {
     get cat() { return "owner"; }
 
     async run(client, message, args, prefix) {
-        if (!isOwner(client, message.author.id)) return;
+        const isOwner =
+            message.author.id === "282494845753491456" ||
+            (client.config.owners && client.config.owners.includes(message.author.id));
+        if (!isOwner) return;
 
         const avatar = client.user.displayAvatarURL({ dynamic: true });
 
