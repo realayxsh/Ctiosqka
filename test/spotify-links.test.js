@@ -196,6 +196,40 @@ test('first text query shows the engine picker before voice connects', async () 
     connect(f.player);
 });
 
+test('text search retries once when the provider briefly returns no tracks', async () => {
+    const f = playFixture();
+    const track = { title: 'Found after retry', uri: 'https://example.com/song', length: 180000 };
+    let searchCalls = 0;
+    let collect;
+    f.player.search = async () => {
+        searchCalls++;
+        return searchCalls === 1 ? { tracks: [] } : { type: 'TRACK', tracks: [track] };
+    };
+    f.message.channel.send = async payload => {
+        f.sent.push(payload);
+        return {
+            edit: async payload => f.edits.push(payload),
+            createMessageComponentCollector: () => ({
+                on: (event, callback) => {
+                    if (event === 'collect') collect = callback;
+                },
+            }),
+        };
+    };
+
+    await new Play(f.client).run(f.client, f.message, ['intermittent song'], '+');
+    await collect({
+        customId: 'def',
+        user: f.message.author,
+        deferUpdate: async () => {},
+    });
+
+    assert.equal(searchCalls, 2);
+    assert.deepEqual(f.queued, [track]);
+    assert.equal(f.starts, 1);
+    assert.match(contents(f.edits.at(-1)), /Added Song to Queue/);
+});
+
 test('provider failures always replace Searching and identify the correct source', async () => {
     for (const query of [playlist, 'https://www.deezer.com/playlist/123']) {
         const f = playFixture();

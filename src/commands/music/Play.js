@@ -62,9 +62,12 @@ class Play extends AvonCommand {
                 })).then(player => ({ player }), error => ({ error }));
             const searchWithPlayer = async options => {
                 // Kazagumo can search without an established Discord voice session.
-                const [ready, result] = await Promise.all([
+                const search = () => existingPlayer
+                    ? existingPlayer.search(query, options)
+                    : client.poru.search(query, options);
+                const [ready, firstResult] = await Promise.all([
                     playerReady,
-                    existingPlayer ? existingPlayer.search(query, options) : client.poru.search(query, options)
+                    search()
                 ]);
                 if (ready.error) throw ready.error;
                 const player = ready.player;
@@ -72,6 +75,15 @@ class Play extends AvonCommand {
                     throw new Error('Player changed during search');
                 }
                 player.setTextChannel(message.channel.id);
+                let result = firstResult;
+                if (!result?.tracks?.length) {
+                    // Search providers occasionally return an empty first response for a valid query.
+                    await new Promise(resolve => setTimeout(resolve, 400));
+                    result = await search();
+                    if (client.poru.players.get(message.guild.id) !== player) {
+                        throw new Error('Player changed during search');
+                    }
+                }
                 return { player, result };
             };
 
