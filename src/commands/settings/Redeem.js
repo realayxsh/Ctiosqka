@@ -55,22 +55,26 @@ class Redeem extends AvonCommand{
             let remaining = codes.filter(c => (typeof c === 'object' ? c.code : c) !== code);
             await client.data3.set(`premium_codes`, remaining);
             await client.data3.set(`premium_${message.guild.id}`, { active: true, expiresAt, activatedAt: Date.now() });
-            let identity = { nickname: false, avatar: false };
-            try {
-                identity = await applyPremiumBranding(client, message.guild);
-                if (expiresAt !== null) scheduleExpiry(client, message.guild.id, expiresAt);
-            } catch (error) {
-                console.warn(`[Premium Branding] Could not update the server profile (code ${Number(error?.code) || 'unknown'}).`);
-            }
+            if (expiresAt !== null) scheduleExpiry(client, message.guild.id, expiresAt);
 
             let expText = expiresAt ? `<t:${Math.floor(expiresAt/1000)}:F>` : '**Never (Lifetime)**';
-            return send(
+            const activationReply = await send(
                 `**${client.emoji.premium} | Premium Activated!**\n\n` +
                 `${client.emoji.tick} | **${message.guild.name}** now has **Premium** (${label})!\n\n` +
-                `Expires: ${expText}\n\nAll filters and premium features are now unlocked.` +
-                `${identity.nickname && identity.avatar ? '\n\nYour server bot profile is now **Radio Premium** with the Premium logo.' : '\n\n' + client.emoji.warning + ' | Some profile changes could not be applied. Check the bot’s Change Nickname permission.'}`,
+                `Expires: ${expText}\n\nAll filters and premium features are now unlocked.\n\n` +
+                `Updating this server's bot profile in the background...`,
                 message.guild.iconURL({ dynamic: true })
             );
+            applyPremiumBranding(client, message.guild).then(identity => {
+                if (identity.nickname && identity.avatar) return;
+                return send(
+                    `${client.emoji.warning} | Premium is active, but some bot profile changes failed. Check **Change Nickname** permission and the bot's server profile access.`
+                );
+            }).catch(error => {
+                console.warn(`[Premium Branding] Could not update the server profile (code ${Number(error?.code) || 'unknown'}).`);
+                return send(`${client.emoji.warning} | Premium is active, but the bot profile update failed. Check its server permissions.`);
+            }).catch(() => {});
+            return activationReply;
         } catch(e){ console.log(e); }
     }
 }

@@ -74,7 +74,7 @@ test('restore removes the branding record when there was no earlier customizatio
     assert.equal(f.store.has('server_brand_guild'), false);
 });
 
-test('redeeming Premium automatically applies the server-specific profile', async () => {
+test('redeeming Premium replies before applying the server-specific profile', { timeout: 5000 }, async () => {
     const Redeem = require('../src/commands/settings/Redeem');
     const f = fixture({ nickname: null });
     const data = new Map([
@@ -92,6 +92,14 @@ test('redeeming Premium automatically applies the server-specific profile', asyn
     f.guild.name = 'Test server';
     f.guild.iconURL = () => null;
     const replies = [];
+    let finishAvatarUpdate;
+    let markAvatarUpdateStarted;
+    const avatarUpdateStarted = new Promise(resolve => { markAvatarUpdateStarted = resolve; });
+    f.client.rest.patch = async (route, { body }) => {
+        f.updates.push(['avatar', route, body.avatar]);
+        markAvatarUpdateStarted();
+        await new Promise(resolve => { finishAvatarUpdate = resolve; });
+    };
     const message = {
         guild: f.guild, author: { id: 'admin' },
         member: { permissions: { has: () => true } },
@@ -99,7 +107,10 @@ test('redeeming Premium automatically applies the server-specific profile', asyn
     };
     await new Redeem(f.client).run(f.client, message, ['radio30'], '+');
     assert.equal(data.get('premium_guild').active, true);
+    assert.equal(replies.length, 1);
+    await avatarUpdateStarted;
     assert.equal(f.updates[0][1], PREMIUM_NICKNAME);
     assert.match(f.updates[1][2], /^data:image\/jpeg;base64,/);
-    assert.equal(replies.length, 1);
+    finishAvatarUpdate();
+    await new Promise(resolve => setImmediate(resolve));
 });
