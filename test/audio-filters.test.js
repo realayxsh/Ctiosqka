@@ -101,12 +101,14 @@ test('every preset produces a complete, bounded request through the real Shoukak
 test('spatial presets use distinct headphone rotation rates without a mono mixer or pitch wobble', () => {
     for (const id of ['8d', 'dolbyatmos']) {
         assert(PRESETS[id].filters.rotation.rotationHz >= 0.15);
-        assert(PRESETS[id].filters.rotation.rotationHz <= 0.3);
+        assert(PRESETS[id].filters.rotation.rotationHz <= 0.4);
         assert(!PRESETS[id].filters.channelMix);
         assert(!PRESETS[id].filters.vibrato);
     }
     assert.notEqual(PRESETS['8d'].filters.rotation.rotationHz, PRESETS.dolbyatmos.filters.rotation.rotationHz);
+    assert.equal(PRESETS.dolbyatmos.filters.rotation.rotationHz, 0.35);
     assert.match(filterMessage({ id: 'dolbyatmos', ...PRESETS.dolbyatmos }, emoji), /not true Dolby Atmos/);
+    assert.match(filterMessage({ id: 'dolbyatmos', ...PRESETS.dolbyatmos }, emoji), /More pronounced left\/right stereo movement/);
 });
 
 test('switching, toggling off, and clearing fully reset old effects and every state flag', async () => {
