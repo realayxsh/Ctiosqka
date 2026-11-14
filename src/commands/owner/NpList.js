@@ -1,6 +1,6 @@
 const { ContainerBuilder, TextDisplayBuilder, SectionBuilder, ThumbnailBuilder, SeparatorBuilder, MessageFlags } = require("discord.js");
 const AvonCommand = require("../../structures/avonCommand");
-const { getStoredNoPrefixEntries, entryUserId, entryExpiryText } = require('../../structures/noprefixAccess');
+const { getStoredNoPrefixEntries, entryUserId, entryExpiryText, activeEntries } = require('../../structures/noprefixAccess');
 
 class NpList extends AvonCommand{
     get name(){ return 'nplist'; }
@@ -25,7 +25,7 @@ class NpList extends AvonCommand{
             };
 
             // Global (all-server) noprefix list
-            const globalDb = await getStoredNoPrefixEntries(client, `noprefix_${client.user.id}`);
+            const globalDb = activeEntries(await getStoredNoPrefixEntries(client, `noprefix_${client.user.id}`));
 
             if(globalDb.length === 0) return send(`${client.emoji.cross} | No users have global no-prefix.`);
 

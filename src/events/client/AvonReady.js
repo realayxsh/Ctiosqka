@@ -4,13 +4,28 @@ const wh = require("../../structures/webhook");
 const { registerCommands } = require('../../slash/register');
 const { isPremium } = require('../../structures/premiumAccess');
 const { syncPremiumBranding } = require('../../structures/premiumBranding');
+const { syncNoPrefixExpirations } = require('../../structures/noprefixExpiry');
 class AvonReady extends AvonClientEvent{
     get name(){
         return 'clientReady';
     }
     async run(){
         console.log(`${this.client.user.username} is Online!`);
+        const retryPremiumSync = guild => {
+            const timer = setTimeout(() => {
+                syncPremiumBranding(this.client, guild).catch(error => {
+                    console.warn(`[Premium Branding] Could not sync a server profile (code ${Number(error?.code) || 'unknown'}); retrying.`);
+                    retryPremiumSync(guild);
+                });
+            }, 60_000);
+            timer.unref?.();
+        };
         await restoreListeningStatus(this.client);
+        try {
+            await syncNoPrefixExpirations(this.client);
+        } catch {
+            console.warn('[No-Prefix Expiry] Could not reconcile timed grants at startup.');
+        }
         wh.initWebhook();
         wh.info('Bot online', `**Bot ID:** ${this.client.user.id}\n**Cluster:** ${this.client.cluster?.id ?? 0}\n**Servers in this cluster:** ${this.client.guilds.cache.size}`);
         if(!this.client.cluster || this.client.cluster.id === 0) {
@@ -30,6 +45,7 @@ class AvonReady extends AvonClientEvent{
                 await syncPremiumBranding(this.client, x);
             } catch (error) {
                 console.warn(`[Premium Branding] Could not sync a server profile (code ${Number(error?.code) || 'unknown'}).`);
+                retryPremiumSync(x);
             }
             let data =  await this.client.data.get(`${x.id}-247`);
             if(!data || data === null)  this.client.data.set(`${x.id}-247`,`disabled`)  ;

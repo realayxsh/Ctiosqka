@@ -10,6 +10,7 @@ const Shoukaku = require("./Shoukaku");
 const Lavasfy = require("./Lavasfy");
 const wh = require("./webhook");
 const { gatewayIntents } = require('./gatewayIntents');
+const { scheduleNoPrefixExpiry, cancelNoPrefixExpiry } = require('./noprefixExpiry');
 
 class Avon extends Client {
     constructor(){
@@ -21,6 +22,12 @@ class Avon extends Client {
             allowedMentions: { repliedUser: true, parse: ['everyone', 'roles', 'users'] }
         });
         this.cluster = new ClusterClient(this);
+        this.on('noprefixExpirySchedule', (scope, entry) => {
+            scheduleNoPrefixExpiry(this, scope, entry);
+        });
+        this.on('noprefixExpiryCancel', (scope, entry) => {
+            cancelNoPrefixExpiry(this, scope, entry);
+        });
         wh.initWebhook();
         this.on('error', error => wh.error('Discord client error', error));
         this.on('shardError', error => wh.error('Discord shard error', error));

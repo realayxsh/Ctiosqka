@@ -54,7 +54,12 @@ class Redeem extends AvonCommand{
 
             let remaining = codes.filter(c => (typeof c === 'object' ? c.code : c) !== code);
             await client.data3.set(`premium_codes`, remaining);
-            await client.data3.set(`premium_${message.guild.id}`, { active: true, expiresAt, activatedAt: Date.now() });
+            await client.data3.set(`premium_${message.guild.id}`, {
+                active: true,
+                expiresAt,
+                activatedAt: Date.now(),
+                activatedBy: message.author.id,
+            });
             if (expiresAt !== null) scheduleExpiry(client, message.guild.id, expiresAt);
 
             let expText = expiresAt ? `<t:${Math.floor(expiresAt/1000)}:F>` : '**Never (Lifetime)**';

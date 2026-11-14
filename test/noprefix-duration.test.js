@@ -47,16 +47,22 @@ test('duration parsing supports day, month, year, and lifetime no-prefix grants'
 });
 
 test('existing string entries stay lifetime and expired records are pruned', async () => {
-    const client = { data2: {
-        get: async () => ['legacy-user', { id: 'expired-user', expiresAt: Date.now() - 1 }],
-        set: async (_, value) => { client.saved = value; },
-    } };
+    const sent = [];
+    const client = {
+        user: { id: 'bot', username: 'Radio', displayAvatarURL: () => 'https://example.com/bot.png' },
+        data2: {
+            get: async () => ['legacy-user', { id: 'expired-user', expiresAt: Date.now() - 1 }],
+            set: async (_, value) => { client.saved = value; },
+        },
+        users: { fetch: async () => ({ send: async payload => sent.push(payload) }) },
+    };
     assert.equal(isEntryActive('legacy-user'), true);
     assert.equal(entryUserId('legacy-user'), 'legacy-user');
     assert.deepEqual(activeEntries(['legacy-user', { id: 'expired-user', expiresAt: Date.now() - 1 }]).map(entryUserId), ['legacy-user']);
     assert.equal(entryExpiryText('legacy-user'), 'Lifetime');
-    assert.deepEqual((await getStoredNoPrefixEntries(client, 'key')).map(entryUserId), ['legacy-user']);
+    assert.deepEqual((await getStoredNoPrefixEntries(client, 'noprefix_bot')).map(entryUserId), ['legacy-user']);
     assert.deepEqual(client.saved, ['legacy-user']);
+    assert.equal(sent.length, 1);
 });
 
 test('noprefix add stores duration and show lists its expiry', async () => {

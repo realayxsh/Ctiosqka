@@ -9,7 +9,7 @@ const { isOwner, runOwnerMessage } = require('./ownerMessages');
 const { WEBSITE_URL } = require('./brandingLinks');
 const { isChannelDisabled } = require('./disabledChannelCache');
 const { getPrefix, invalidatePrefixCache } = require('./prefixCache');
-const { activeEntries, hasExpiredEntries, entryUserId, isEntryActive } = require('./noprefixAccess');
+const { getStoredNoPrefixEntries, entryUserId, isEntryActive } = require('./noprefixAccess');
 const table = new ascii().setHeading('Avon Commands', 'Status');
 const top = require(`@top-gg/sdk`);
 const voteApi = new top.Api(process.env.topggapi || config.topggapi);
@@ -121,17 +121,13 @@ class AvonCommands extends EventEmitter {
             const [db, db2] = await Promise.all([
                 (_npGuildCached && now < _npGuildCached.expires)
                     ? Promise.resolve(_npGuildCached.list)
-                    : this.client.data2.get(`noprefix_${message.guild.id}`).then(v => {
-                        const list = activeEntries(v || []);
-                        if (hasExpiredEntries(v || [])) this.client.data2.set(`noprefix_${message.guild.id}`, list).catch(() => {});
+                    : getStoredNoPrefixEntries(this.client, `noprefix_${message.guild.id}`).then(list => {
                         _noprefixCache.set(_npGuildKey, { list, expires: now + NOPREFIX_TTL });
                         return list;
                     }),
                 (_npGlobalCached && now < _npGlobalCached.expires)
                     ? Promise.resolve(_npGlobalCached.list)
-                    : this.client.data2.get(`noprefix_${this.client.user.id}`).then(v => {
-                        const list = activeEntries(v || []);
-                        if (hasExpiredEntries(v || [])) this.client.data2.set(`noprefix_${this.client.user.id}`, list).catch(() => {});
+                    : getStoredNoPrefixEntries(this.client, `noprefix_${this.client.user.id}`).then(list => {
                         _noprefixCache.set(_npGlobalKey, { list, expires: now + NOPREFIX_TTL });
                         return list;
                     })

@@ -37,10 +37,16 @@ function makeNoPrefixEntry(userId, durationText) {
 }
 
 async function getStoredNoPrefixEntries(client, key) {
-    const stored = await client.data2.get(key) || [];
-    const active = activeEntries(stored);
-    if (hasExpiredEntries(stored)) await client.data2.set(key, active);
-    return active;
+    const prefix = `noprefix_`;
+    const scopeId = key.startsWith(prefix) ? key.slice(prefix.length) : null;
+    const scope = scopeId === client.user.id
+        ? { type: 'global' }
+        : {
+            type: 'guild',
+            guildId: scopeId,
+            guildName: client.guilds?.cache?.get(scopeId)?.name,
+        };
+    return require('./noprefixExpiry').reconcileNoPrefixScope(client, scope);
 }
 
 module.exports = {

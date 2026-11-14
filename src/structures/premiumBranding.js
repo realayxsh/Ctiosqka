@@ -1,5 +1,6 @@
 const fs = require('node:fs/promises');
 const path = require('node:path');
+const { EmbedBuilder } = require('discord.js');
 const { isPremium } = require('./premiumAccess');
 const { invalidateServerBrandCache } = require('./serverBrand');
 
@@ -7,6 +8,7 @@ const PREMIUM_NICKNAME = 'Radio Premium';
 const BRAND_KEY_PREFIX = 'server_brand_';
 const MAX_TIMER_MS = 2_147_000_000;
 const timers = new Map();
+const expiryNoticeLocks = new Map();
 const logoPath = path.join(__dirname, '../assets/radio-premium.jpg');
 
 function brandKey(guildId) {
@@ -104,19 +106,126 @@ async function restorePremiumBranding(client, guild) {
     return true;
 }
 
+function samePremiumPeriod(first, second) {
+    return first?.expiresAt === second?.expiresAt &&
+        first?.activatedAt === second?.activatedAt &&
+        first?.activatedBy === second?.activatedBy;
+}
+
+function premiumExpiryEmbed(client, guild, role, expiresAt) {
+    return new EmbedBuilder()
+        .setColor(0xF0A332)
+        .setAuthor({
+            name: `${client.user.username} • Premium update`,
+            iconURL: client.user.displayAvatarURL(),
+        })
+        .setTitle('Radio Premium Expired')
+        .setDescription(
+            `The Premium subscription for **${guild?.name || 'your server'}** has expired.\n\n` +
+            `Premium-only features are no longer active for this server.`
+        )
+        .addFields(
+            { name: 'Server', value: guild?.name || 'Unavailable', inline: true },
+            { name: 'Your role', value: role, inline: true },
+            { name: 'Expired', value: `<t:${Math.floor(expiresAt / 1000)}:F>`, inline: false },
+            { name: 'Reactivate Premium', value: 'Redeem a new code in the server with `/redeem <code>` or your bot prefix command.' }
+        )
+        .setFooter({ text: 'Radio Music • Premium status' })
+        .setTimestamp();
+}
+
+async function notifyPremiumExpiry(client, guild) {
+    if (!guild) return false;
+    const guildId = guild.id;
+    const lockKey = `${client.cluster?.id ?? 0}:${guildId}`;
+    if (expiryNoticeLocks.has(lockKey)) return expiryNoticeLocks.get(lockKey);
+
+    const task = (async () => {
+        const key = `premium_${guildId}`;
+        let data = await client.data3.get(key);
+        if (!Number.isFinite(data?.expiresAt) || data.active === false ||
+            Date.now() < data.expiresAt || data.expiryNoticeCompletedAt) return false;
+
+        let ownerId = guild.ownerId;
+        if (!ownerId && typeof guild.fetchOwner === 'function') {
+            ownerId = (await guild.fetchOwner().catch(() => null))?.id;
+        }
+        const recipients = new Map();
+        if (ownerId) recipients.set(ownerId, 'Server owner');
+        if (data.activatedBy) {
+            recipients.set(data.activatedBy, recipients.has(data.activatedBy)
+                ? 'Server owner and activating user'
+                : 'User who activated Premium');
+        }
+
+        const latest = await client.data3.get(key);
+        if (!samePremiumPeriod(latest, data) || latest.active === false ||
+            !Number.isFinite(latest.expiresAt) || Date.now() < latest.expiresAt) return false;
+        if (!Array.isArray(latest.expiryNoticeRecipients)) {
+            latest.expiryNoticeRecipients = [...recipients].map(([id, role]) => ({ id, role }));
+            latest.expiryNoticeAttemptedUserIds = [];
+            latest.expiryNoticeStartedAt = Date.now();
+            await client.data3.set(key, latest);
+        }
+        data = latest;
+
+        for (const recipient of data.expiryNoticeRecipients) {
+            const current = await client.data3.get(key);
+            if (!samePremiumPeriod(current, data) || current?.active === false || !Number.isFinite(current?.expiresAt) ||
+                Date.now() < current.expiresAt) return false;
+            const attempted = current.expiryNoticeAttemptedUserIds || [];
+            if (attempted.includes(recipient.id)) {
+                data = current;
+                continue;
+            }
+            current.expiryNoticeAttemptedUserIds = [...attempted, recipient.id];
+            await client.data3.set(key, current);
+            data = current;
+
+            try {
+                const user = await client.users.fetch(recipient.id);
+                await user.send({
+                    embeds: [premiumExpiryEmbed(client, guild, recipient.role, current.expiresAt)],
+                    allowedMentions: { parse: [] },
+                });
+            } catch {
+                console.warn('[Premium Expiry] Could not deliver an expiration DM.');
+            }
+        }
+
+        const current = await client.data3.get(key);
+        if (!samePremiumPeriod(current, data)) return false;
+        current.expiryNoticeCompletedAt = Date.now();
+        await client.data3.set(key, current);
+        return true;
+    })();
+
+    expiryNoticeLocks.set(lockKey, task);
+    try {
+        return await task;
+    } finally {
+        if (expiryNoticeLocks.get(lockKey) === task) expiryNoticeLocks.delete(lockKey);
+    }
+}
+
 function scheduleExpiry(client, guildId, expiresAt) {
     const key = `${client.cluster?.id ?? 0}:${guildId}`;
     clearTimeout(timers.get(key));
     if (!Number.isFinite(expiresAt)) return;
     const check = async () => {
         try {
-            if (await isPremium(client, guildId)) {
-                const current = await client.data3.get(`premium_${guildId}`);
-                if (Number.isFinite(current?.expiresAt)) scheduleExpiry(client, guildId, current.expiresAt);
+            const current = await client.data3.get(`premium_${guildId}`);
+            if (!current || current.active === false ||
+                !Number.isFinite(current.expiresAt) || current.expiresAt === null) return;
+            if (Date.now() < current.expiresAt) {
+                scheduleExpiry(client, guildId, current.expiresAt);
                 return;
             }
             const guild = client.guilds.cache.get(guildId);
-            if (guild) await restorePremiumBranding(client, guild);
+            if (guild) {
+                await notifyPremiumExpiry(client, guild);
+                await restorePremiumBranding(client, guild);
+            }
         } catch {
             scheduleExpiry(client, guildId, Date.now() + 60_000);
         }
@@ -132,6 +241,7 @@ async function syncPremiumBranding(client, guild) {
         await applyPremiumBranding(client, guild);
         if (Number.isFinite(data?.expiresAt)) scheduleExpiry(client, guild.id, data.expiresAt);
     } else {
+        await notifyPremiumExpiry(client, guild);
         const previous = await client.data4.get(brandKey(guild.id));
         if (previous?.premiumIdentity) await restorePremiumBranding(client, guild);
     }
@@ -146,4 +256,5 @@ function cancelExpiry(client, guildId) {
 module.exports = {
     PREMIUM_NICKNAME, applyPremiumBranding, restorePremiumBranding,
     scheduleExpiry, syncPremiumBranding, cancelExpiry,
+    notifyPremiumExpiry, premiumExpiryEmbed,
 };

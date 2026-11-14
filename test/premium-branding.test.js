@@ -107,6 +107,7 @@ test('redeeming Premium replies before applying the server-specific profile', { 
     };
     await new Redeem(f.client).run(f.client, message, ['radio30'], '+');
     assert.equal(data.get('premium_guild').active, true);
+    assert.equal(data.get('premium_guild').activatedBy, 'admin');
     assert.equal(replies.length, 1);
     await avatarUpdateStarted;
     assert.equal(f.updates[0][1], PREMIUM_NICKNAME);
