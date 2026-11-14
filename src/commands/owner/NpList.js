@@ -1,5 +1,6 @@
 const { ContainerBuilder, TextDisplayBuilder, SectionBuilder, ThumbnailBuilder, SeparatorBuilder, MessageFlags } = require("discord.js");
 const AvonCommand = require("../../structures/avonCommand");
+const { getStoredNoPrefixEntries, entryUserId, entryExpiryText } = require('../../structures/noprefixAccess');
 
 class NpList extends AvonCommand{
     get name(){ return 'nplist'; }
@@ -24,11 +25,13 @@ class NpList extends AvonCommand{
             };
 
             // Global (all-server) noprefix list
-            const globalDb = await client.data2.get(`noprefix_${client.user.id}`) || [];
+            const globalDb = await getStoredNoPrefixEntries(client, `noprefix_${client.user.id}`);
 
             if(globalDb.length === 0) return send(`${client.emoji.cross} | No users have global no-prefix.`);
 
-            const lines = globalDb.map((id, i) => `\`${i+1}\` <@${id}> | \`${id}\``);
+            const lines = globalDb.map((entry, i) =>
+                `\`${i+1}\` <@${entryUserId(entry)}> | \`${entryUserId(entry)}\` — ${entryExpiryText(entry)}`
+            );
 
             return send(
                 `**${client.emoji.users} | Global No-Prefix List (${globalDb.length})**\n\n${lines.join('\n')}\n\n-# Use \`${prefix}noprefix remove <user_id> all\` to remove`,

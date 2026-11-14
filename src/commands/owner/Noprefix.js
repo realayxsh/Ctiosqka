@@ -1,6 +1,9 @@
 const { ContainerBuilder, TextDisplayBuilder, SectionBuilder, ThumbnailBuilder, MessageFlags } = require("discord.js");
 const AvonCommand = require("../../structures/avonCommand");
 const { invalidateNoprefixCache } = require("../../structures/CommandHandler");
+const {
+    entryUserId, entryExpiryText, makeNoPrefixEntry, getStoredNoPrefixEntries,
+} = require('../../structures/noprefixAccess');
 
 class Noprefix extends AvonCommand{
     get name(){ return 'noprefix'; }
@@ -24,7 +27,12 @@ class Noprefix extends AvonCommand{
                 return message.channel.send({ flags: [MessageFlags.IsComponentsV2], components: [container] });
             };
 
-            if(!args[0]) return await send(`${client.emoji.cross} | Usage: \`${prefix}noprefix <add/remove/show> <user_id> <server_id/all>\``);
+            if(!args[0]) return await send(
+                `Usage:\n\`${prefix}noprefix add <user_id> <server_id/all> <duration>\`\n` +
+                `\`${prefix}noprefix remove <user_id> <server_id/all>\`\n` +
+                `\`${prefix}noprefix show <server_id/all>\`\n\n` +
+                `Durations: \`1d\`, \`1m\`, \`2m\`, \`3m\`, \`1y\`, \`lifetime\``
+            );
 
             let op = args[0].toLowerCase();
 
@@ -39,25 +47,26 @@ class Noprefix extends AvonCommand{
                 const us = message.mentions.users.first() || await resolveUser(args[1]);
                 if(!us) return await send(`${client.emoji.cross} | Could not find a user with that ID`);
                 let pk = args[2];
+                const durationText = args[3] || 'lifetime';
+                const entry = makeNoPrefixEntry(us.id, durationText);
+                if (!entry) return await send(`${client.emoji.cross} | Invalid duration. Use \`1d\`, \`1m\`–\`24m\`, \`1y\`–\`5y\`, or \`lifetime\`.`);
                 if(pk === `all`){
-                    let db = await client.data2.get(`noprefix_${client.user.id}`);
-                    if(!db || db === null) { await client.data2.set(`noprefix_${client.user.id}`, []); db = []; }
-                    if(db.includes(us.id)) return await send(`${client.emoji.warning} | **${us.username}** is already in all-server no prefix`);
-                    db.push(us.id);
+                    let db = await getStoredNoPrefixEntries(client, `noprefix_${client.user.id}`);
+                    if(db.some(item => entryUserId(item) === us.id)) return await send(`${client.emoji.warning} | **${us.username}** is already in all-server no prefix`);
+                    db.push(entry);
                     await client.data2.set(`noprefix_${client.user.id}`, db);
                     invalidateNoprefixCache(`global_${client.user.id}`);
-                    return await send(`${client.emoji.tick} | Added **${us.username}** (\`${us.id}\`) to all-server no prefix`, us.displayAvatarURL({ dynamic: true }));
+                    return await send(`${client.emoji.tick} | Added **${us.username}** (\`${us.id}\`) to all-server no prefix for **${entryExpiryText(entry)}**.`, us.displayAvatarURL({ dynamic: true }));
                 } else {
                     let guild;
                     try { guild = await client.guilds.fetch(args[2]); } catch(e) { return await send(`${client.emoji.cross} | Invalid server ID or bot is not in that server`); }
                     if(!guild) return await send(`${client.emoji.cross} | Please provide a valid server ID`);
-                    let db2 = await client.data2.get(`noprefix_${guild.id}`);
-                    if(!db2 || db2 === null) { await client.data2.set(`noprefix_${guild.id}`, []); db2 = []; }
-                    if(db2.includes(us.id)) return await send(`${client.emoji.warning} | **${us.username}** is already in **${guild.name}**'s no prefix`);
-                    db2.push(us.id);
+                    let db2 = await getStoredNoPrefixEntries(client, `noprefix_${guild.id}`);
+                    if(db2.some(item => entryUserId(item) === us.id)) return await send(`${client.emoji.warning} | **${us.username}** is already in **${guild.name}**'s no prefix`);
+                    db2.push(entry);
                     await client.data2.set(`noprefix_${guild.id}`, db2);
                     invalidateNoprefixCache(`guild_${guild.id}`);
-                    return await send(`${client.emoji.tick} | Added **${us.username}** (\`${us.id}\`) to **${guild.name}**'s no prefix`, us.displayAvatarURL({ dynamic: true }));
+                    return await send(`${client.emoji.tick} | Added **${us.username}** (\`${us.id}\`) to **${guild.name}**'s no prefix for **${entryExpiryText(entry)}**.`, us.displayAvatarURL({ dynamic: true }));
                 }
             }
 
@@ -66,20 +75,20 @@ class Noprefix extends AvonCommand{
                 if(!us) return await send(`${client.emoji.cross} | Could not find a user with that ID`);
                 let pk = args[2];
                 if(pk === `all`){
-                    let db = await client.data2.get(`noprefix_${client.user.id}`);
+                    let db = await getStoredNoPrefixEntries(client, `noprefix_${client.user.id}`);
                     if(!db || db === null) return await send(`${client.emoji.cross} | That user is not in all-server no prefix`);
-                    if(!db.includes(us.id)) return await send(`${client.emoji.cross} | **${us.username}** is not in all-server no prefix`);
-                    await client.data2.set(`noprefix_${client.user.id}`, db.filter(x => x !== us.id));
+                    if(!db.some(item => entryUserId(item) === us.id)) return await send(`${client.emoji.cross} | **${us.username}** is not in all-server no prefix`);
+                    await client.data2.set(`noprefix_${client.user.id}`, db.filter(x => entryUserId(x) !== us.id));
                     invalidateNoprefixCache(`global_${client.user.id}`);
                     return await send(`${client.emoji.tick} | Removed **${us.username}** (\`${us.id}\`) from all-server no prefix`, us.displayAvatarURL({ dynamic: true }));
                 } else {
                     let guild;
                     try { guild = await client.guilds.fetch(args[2]); } catch(e) { return await send(`${client.emoji.cross} | Invalid server ID or bot is not in that server`); }
                     if(!guild) return await send(`${client.emoji.cross} | Please provide a valid server ID`);
-                    let db2 = await client.data2.get(`noprefix_${guild.id}`);
+                    let db2 = await getStoredNoPrefixEntries(client, `noprefix_${guild.id}`);
                     if(!db2 || db2 === null) return await send(`${client.emoji.cross} | That user is not in **${guild.name}**'s no prefix`);
-                    if(!db2.includes(us.id)) return await send(`${client.emoji.cross} | **${us.username}** is not in **${guild.name}**'s no prefix`);
-                    await client.data2.set(`noprefix_${guild.id}`, db2.filter(x => x !== us.id));
+                    if(!db2.some(item => entryUserId(item) === us.id)) return await send(`${client.emoji.cross} | **${us.username}** is not in **${guild.name}**'s no prefix`);
+                    await client.data2.set(`noprefix_${guild.id}`, db2.filter(x => entryUserId(x) !== us.id));
                     invalidateNoprefixCache(`guild_${guild.id}`);
                     return await send(`${client.emoji.tick} | Removed **${us.username}** (\`${us.id}\`) from **${guild.name}**'s no prefix`, us.displayAvatarURL({ dynamic: true }));
                 }
@@ -88,22 +97,22 @@ class Noprefix extends AvonCommand{
             if(op === `show` || op === `list`){
                 let pk = args[1];
                 if(pk === `all`){
-                    let db = await client.data2.get(`noprefix_${client.user.id}`);
+                    let db = await getStoredNoPrefixEntries(client, `noprefix_${client.user.id}`);
                     if(!db || db === null || db.length === 0) return await send(`${client.emoji.cross} | No users in all-server no prefix.`);
-                    let lol = db.map((x, i) => `\`${i+1}\` <@${x}> | \`${x}\``);
+                    let lol = db.map((x, i) => `\`${i+1}\` <@${entryUserId(x)}> | \`${entryUserId(x)}\` — ${entryExpiryText(x)}`);
                     return await send(`**${client.emoji.users} | All-Server No-Prefix List (${db.length})**\n\n${lol.join('\n')}`, message.author.displayAvatarURL({ dynamic: true }));
                 } else {
                     let guild;
                     try { guild = await client.guilds.fetch(args[1]); } catch(e) { return await send(`${client.emoji.cross} | Invalid server ID or bot is not in that server`); }
                     if(!guild) return await send(`${client.emoji.cross} | Please provide a valid server ID`);
-                    let db = await client.data2.get(`noprefix_${guild.id}`);
+                    let db = await getStoredNoPrefixEntries(client, `noprefix_${guild.id}`);
                     if(!db || db === null || db.length === 0) return await send(`${client.emoji.cross} | No users in **${guild.name}**'s no prefix`);
-                    let lu = db.map((x, i) => `\`${i+1}\` <@${x}> | \`${x}\``);
+                    let lu = db.map((x, i) => `\`${i+1}\` <@${entryUserId(x)}> | \`${entryUserId(x)}\` — ${entryExpiryText(x)}`);
                     return await send(`**${client.emoji.users} | ${guild.name}'s No-Prefix List (${db.length})**\n\n${lu.join('\n')}`, guild.iconURL({ dynamic: true }) || client.user.displayAvatarURL());
                 }
             }
 
-            return await send(`${client.emoji.cross} | Usage: \`${prefix}noprefix <add/remove/show> <user_id> <server_id/all>\``);
+            return await send(`${client.emoji.cross} | Usage: \`${prefix}noprefix add <user_id> <server_id/all> <duration>\``);
         } catch(e){ console.log('[Noprefix Error]', e.message, e.stack); }
     }
 }
