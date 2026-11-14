@@ -118,9 +118,9 @@ test('help highlights Premium and keeps filter details in their own category', a
     assert.doesNotMatch(JSON.stringify(home), /\/filter/);
     assert.doesNotMatch(JSON.stringify(home), /8D|Bass Boost/);
     const navigation = f.sent[0].components[1].toJSON();
-    assert.deepEqual(navigation.components.map(button => button.custom_id), ['m1', 'm3', 'm4', 'm6', 'm5']);
+    assert.deepEqual(navigation.components.map(button => button.custom_id), ['m1', 'm2', 'm3', 'm4', 'm6']);
     assert(navigation.components.every(button => button.style === 2 && button.emoji && !button.label));
-    assert(!navigation.components.some(button => button.custom_id === 'm2'));
+    assert.deepEqual(f.sent[0].components[2].toJSON().components.map(button => button.custom_id), ['m5']);
     let premium;
     await f.events.collect({ isButton: () => true, customId: 'm6', update: async payload => { premium = payload; } });
     const copy = serialize(premium);
@@ -154,6 +154,20 @@ test('help lists every filter in All Commands and the Filters category without p
             const usage = `\`${command.name}\``;
             assert(copy.includes(usage), `Missing ${usage} in ${customId}`);
         }
+        const textDisplays = payload.components[0].toJSON().components
+            .filter(component => component.type === 10)
+            .map(component => component.content);
+        const filterSection = customId === 'm2'
+            ? textDisplays.at(-1)
+            : textDisplays.find(content => content.startsWith(`${emoji.filters} **Filters [`));
+        const commandLines = filterSection.split('\n').filter(line =>
+            filters.some(command => [
+                `\`${command.name}\``,
+                `${emoji.filters} \`${command.name}\``,
+            ].includes(line.trim()))
+        );
+        assert.equal(commandLines.length, filters.length);
+        assert(commandLines.every(line => !line.includes(',') && (line.match(/`[^`]+`/g) || []).length === 1));
     }
 });
 
@@ -180,8 +194,9 @@ test('help sections show a short usage note while the home menu stays uncluttere
         else assert(copy.includes('Use prefix `!` or slash `/`.'));
         assert.doesNotMatch(copy, /Two ways to use commands|Type the prefix before/);
         assert.doesNotMatch(copy, /`[\/!+][a-z0-9]/i);
-        assert.equal(payload.components.length, 3);
+        assert.equal(payload.components.length, 4);
         assert.equal(payload.components[1].toJSON().components.length, 5);
+        assert.equal(payload.components[2].toJSON().components.length, 1);
     };
     check(f.sent[0], true);
     for (const value of ['ok1', 'ok2', 'ok3', 'ok4', 'ok5', 'ok6', 'ok7']) {

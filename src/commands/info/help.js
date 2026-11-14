@@ -20,11 +20,13 @@ class Help extends AvonCommand{
             let premCmds   = client.AvonCommands.commands.filter(x => x.cat && x.cat === `premium`);
 
             let b1 = new ButtonBuilder().setStyle(ButtonStyle.Secondary).setCustomId(`m1`).setEmoji(client.emoji.music);
+            let b2 = new ButtonBuilder().setStyle(ButtonStyle.Secondary).setCustomId(`m2`).setEmoji(client.emoji.filters);
             let b3 = new ButtonBuilder().setStyle(ButtonStyle.Secondary).setCustomId(`m3`).setEmoji(client.emoji.settings);
             let b4 = new ButtonBuilder().setStyle(ButtonStyle.Secondary).setCustomId(`m4`).setEmoji(client.emoji.info);
             let b6 = new ButtonBuilder().setStyle(ButtonStyle.Secondary).setCustomId(`m6`).setEmoji(client.emoji.premium || '🎵');
             let b5 = new ButtonBuilder().setStyle(ButtonStyle.Secondary).setCustomId(`m5`).setEmoji(client.emoji.allCommands);
-            let ro  = new ActionRowBuilder().addComponents(b1, b3, b4, b6, b5);
+            let ro  = new ActionRowBuilder().addComponents(b1, b2, b3, b4, b6);
+            let roAll = new ActionRowBuilder().addComponents(b5);
 
             let select = new StringSelectMenuBuilder().setCustomId(`ok`).setPlaceholder(`❯ ${client.user.username} is Love`).addOptions([
                 { label: `Help Home`,    emoji: `${client.emoji.home}`,        value: `ok1` },
@@ -128,7 +130,7 @@ class Help extends AvonCommand{
                 .addTextDisplayComponents(new TextDisplayBuilder().setContent(
                     `${client.emoji.filters} **Filters [${filterCmds.size}]**\n` +
                     `\`filter\` — Choose an audio effect in the slash menu.\n` +
-                    filterCmds.sort((a,b) => a.name.localeCompare(b.name)).map(r => `\`${commandName(r)}\``).join(`, `)
+                    filterCmds.sort((a,b) => a.name.localeCompare(b.name)).map(r => `\`${commandName(r)}\``).join(`\n`)
                 ))
                 .addSeparatorComponents(new SeparatorBuilder().setDivider(false))
                 .addTextDisplayComponents(new TextDisplayBuilder().setContent(
@@ -172,10 +174,10 @@ class Help extends AvonCommand{
             const makeMsg = (container) => ({
                 flags: [MessageFlags.IsComponentsV2],
                 embeds: [],
-                components: [container, ro, ro2]
+                components: [container, ro, roAll, ro2]
             });
 
-            let msg = await message.channel.send({ flags: [MessageFlags.IsComponentsV2], embeds: [], components: [c0, ro, ro2] });
+            let msg = await message.channel.send({ flags: [MessageFlags.IsComponentsV2], embeds: [], components: [c0, ro, roAll, ro2] });
 
             let call = msg.createMessageComponentCollector({
                 filter: (o) => {
@@ -196,7 +198,7 @@ class Help extends AvonCommand{
                 }
                 if(int.isStringSelectMenu()){
                     for(const value of int.values){
-                        if(value === `ok1`) return int.update({ flags: [MessageFlags.IsComponentsV2], embeds: [], components: [c0, ro, ro2] });
+                        if(value === `ok1`) return int.update({ flags: [MessageFlags.IsComponentsV2], embeds: [], components: [c0, ro, roAll, ro2] });
                         if(value === `ok2`) return int.update(makeMsg(c1));
                         if(value === `ok3`) return int.update(makeMsg(c2));
                         if(value === `ok4`) return int.update(makeMsg(c3));
