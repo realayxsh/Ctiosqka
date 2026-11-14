@@ -17,7 +17,7 @@ const PRESETS = {
     vaporwave: { label: 'Vaporwave', key: 'vapor', filters: { timescale: { speed: 0.85, pitch: 0.8, rate: 1 } } },
     dolbyatmos: { label: 'Dolby-style Spatial', key: 'dolbyatmos',
         filters: { rotation: { rotationHz: 0.6 } },
-        note: 'Left/right rotation; pitch and vocals stay unchanged. Not true Dolby Atmos.' },
+        note: 'Pronounced left/right stereo movement with the original pitch and vocals preserved. This is not true Dolby Atmos.' },
     concert: { label: 'Concert-style', key: 'concert',
         filters: { volume: 0.9, equalizer: eq([0, 0.03, 0.08, 0.06, 0.03, 0, -0.03, 0, 0.03, 0.05, 0.05, 0.03, 0.02, 0, 0]) },
         note: 'Warm concert-style EQ; this server does not provide a true hall-reverb filter.' },
