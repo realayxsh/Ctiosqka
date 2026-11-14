@@ -110,7 +110,7 @@ test('spatial presets use distinct headphone rotation rates without a mono mixer
     assert.notEqual(PRESETS['8d'].filters.rotation.rotationHz, PRESETS.dolbyatmos.filters.rotation.rotationHz);
     assert.equal(PRESETS.dolbyatmos.filters.rotation.rotationHz, 0.6);
     assert.deepEqual(PRESETS.dolbyatmos.filters, { rotation: { rotationHz: 0.6 } });
-    assert.match(filterMessage({ id: 'dolbyatmos', ...PRESETS.dolbyatmos }, emoji), /Not true Dolby Atmos/);
+    assert.match(filterMessage({ id: 'dolbyatmos', ...PRESETS.dolbyatmos }, emoji), /not true Dolby Atmos/);
     assert.match(filterMessage({ id: 'dolbyatmos', ...PRESETS.dolbyatmos }, emoji), /pitch and vocals stay unchanged/);
 });
 
@@ -220,7 +220,7 @@ test('both dropdowns and slash commands apply exactly the same spatial preset', 
         assert.equal(interaction.deferred, true);
         assert.equal(requests.length, 1);
         assert.match(responseText(interaction), /Enabled/);
-        assert.match(responseText(interaction), /Not true Dolby Atmos/);
+        assert.match(responseText(interaction), /not true Dolby Atmos/);
         payloads.push(requests[0].playerOptions.filters);
     }
     assert.deepEqual(payloads[0], payloads[1]);
@@ -296,5 +296,5 @@ test('filter dropdowns respect disabled command channels for non-owners', async 
 test('menus expose all presets without claiming true Atmos or native hall reverb', () => {
     assert.equal(FILTER_OPTIONS.length, Object.keys(PRESETS).length + 1);
     assert(FILTER_OPTIONS.every(option => option.label.length <= 100 && option.desc.length <= 100));
-    assert.match(FILTER_OPTIONS.find(option => option.value === 'dolbyatmos').desc, /Not true Dolby Atmos/);
+    assert.match(FILTER_OPTIONS.find(option => option.value === 'dolbyatmos').desc, /not true Dolby Atmos/);
 });
