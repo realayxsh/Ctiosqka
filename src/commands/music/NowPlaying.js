@@ -34,7 +34,8 @@ function buildContainer(client, track, player, brandIcon, updateLabel = '-# Upda
     let size = 15;
     let filled = duration > 0 ? Math.min(Math.round((position / duration) * size), size - 1) : 0;
     let bar = `${'▬'.repeat(filled)}●${'▬'.repeat(size - 1 - filled)}`;
-    let loopMode = player.loop === 'track' ? '🔂 Track' : player.loop === 'queue' ? '🔁 Queue' : '➡️ Off';
+    let loopEmoji = client.emoji.loop || client.emoji.music;
+    let loopMode = `${loopEmoji} ${player.loop === 'track' ? 'Track' : player.loop === 'queue' ? 'Queue' : `${client.emoji.arrow} Off`}`;
     const thumb = track.thumbnail || brandIcon || client.user.displayAvatarURL({ dynamic: true });
 
     const container = new ContainerBuilder()

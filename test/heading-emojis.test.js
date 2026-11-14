@@ -90,3 +90,10 @@ test('nowplaying emoji is configured centrally and retained during message updat
         assert(!content.includes('<a:RedPlaying:'));
     }
 });
+
+test('Now Playing uses configured emoji keys instead of plain Unicode emoji', () => {
+    const content = sources.find(source => source.file === 'src/commands/music/NowPlaying.js').content;
+    assert.match(content, /client\.emoji\.loop \|\| client\.emoji\.music/);
+    assert.match(content, /client\.emoji\.arrow} Off/);
+    assert.doesNotMatch(content, /[🔂🔁➡️]/u);
+});
