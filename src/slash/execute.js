@@ -4,6 +4,7 @@ const { PRESETS, FILTER_OPTIONS, applyFilter, filterMessage, filterFailure } = r
 const { OWNER_COMMAND_NAMES, createDefinitions, slashArguments } = require('./catalog');
 const wh = require('../structures/webhook');
 const { isChannelDisabled } = require('../structures/disabledChannelCache');
+const { getPrefix } = require('../structures/prefixCache');
 const { isVotingEnabled } = require('../structures/voting');
 
 const publicNames = new Set([...createDefinitions().map(command => command.name), 'vote']);
@@ -130,7 +131,7 @@ async function executeSlash(client, interaction, access) {
             `Activate your premium code with:\n**/redeem**\n\n` +
             `Check your server's status with **/premium**.`
         ));
-        const prefix = await client.data.get(`${interaction.guild.id}-prefix`) || client.config.prefix;
+        const prefix = await getPrefix(client, interaction.guild.id);
         const message = makeMessage(client, interaction, args, name, member);
         await command.run(client, message, args, prefix, player);
     } catch (error) {

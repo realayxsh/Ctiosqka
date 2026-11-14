@@ -8,14 +8,10 @@ const { isVotingEnabled } = require('./voting');
 const { isOwner, runOwnerMessage } = require('./ownerMessages');
 const { WEBSITE_URL } = require('./brandingLinks');
 const { isChannelDisabled } = require('./disabledChannelCache');
+const { getPrefix, invalidatePrefixCache } = require('./prefixCache');
 const table = new ascii().setHeading('Avon Commands', 'Status');
 const top = require(`@top-gg/sdk`);
 const voteApi = new top.Api(process.env.topggapi || config.topggapi);
-
-// ── Prefix cache: TTL 5 minutes per guild ──
-const _prefixCache = new Map();
-const PREFIX_TTL = 5 * 60 * 1000;
-function invalidatePrefixCache(guildId) { _prefixCache.delete(guildId); }
 
 // ── Noprefix cache: TTL 2 minutes per guild / global key ──
 const _noprefixCache = new Map();
@@ -80,15 +76,7 @@ class AvonCommands extends EventEmitter {
         if(message.author.bot || !message.content) return;
         if(await runOwnerMessage(this.client, message)) return;
         if(!message.guild || message.author.bot || message.attachments.size || message.stickers.size) return;
-        let prefix;
-        const _pce = _prefixCache.get(message.guild.id);
-        if(_pce && Date.now() < _pce.expires){
-            prefix = _pce.prefix;
-        } else {
-            const data = await this.client.data.get(`${message.guild.id}-prefix`);
-            prefix = data || this.client.config.prefix;
-            _prefixCache.set(message.guild.id, { prefix, expires: Date.now() + PREFIX_TTL });
-        }
+        const prefix = await getPrefix(this.client, message.guild.id);
 
         if(message.content === `<@${this.client.user.id}>`){
             let b1 = new ButtonBuilder().setStyle(ButtonStyle.Link).setLabel(`Invite`).setURL(`https://discord.com/oauth2/authorize?client_id=1570724994919563304&permissions=281749858110545&integration_type=0&scope=bot`);

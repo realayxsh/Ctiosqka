@@ -24,11 +24,11 @@ class Prefix extends AvonCommand{
         if(args[0].length > 3) return send(`**${client.emoji.cross} | Can't set a prefix having more than 3 characters**`);
         if(args[1]) return send(`**${client.emoji.cross} | You can't use spaces in the prefix**`);
         if(args[0] === client.config.prefix){
-            client.data.delete(`${message.guild.id}-prefix`);
+            await client.data.delete(`${message.guild.id}-prefix`);
             invalidatePrefixCache(message.guild.id);
             return send(`**${client.emoji.settings} | Guild prefix has been reset**`);
         }
-        client.data.set(`${message.guild.id}-prefix`, args[0]);
+        await client.data.set(`${message.guild.id}-prefix`, args[0]);
         invalidatePrefixCache(message.guild.id);
         return send(`**${client.emoji.settings} | Guild's prefix has been set to** \`${args[0]}\``);
     }
