@@ -1,4 +1,5 @@
 - [Lavalink connectivity](lavalink-setup.md) — verify the configured node's actual WebSocket handshake before replacing it or assuming a port is blocked.
+- [Playback timing](playback-timing.md) — send Now Playing immediately on the track-start event; do not add a UI delay to mask audio timing.
 - [Imported dependencies](imported-dependencies.md) — installed packages from an import may be incomplete even when their versions satisfy the manifest.
 - [Headphone spatial audio](headphone-spatial-audio.md) — the user expects left/right movement; keep spatial claims honest and preset changes consistent across controls.
 - [Slash and owner command scope](slash-owner-scope.md) — public commands use slash; owner commands stay message-only through no-prefix DMs or server mentions.
