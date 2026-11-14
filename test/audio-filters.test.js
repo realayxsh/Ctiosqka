@@ -32,7 +32,8 @@ function fixture() {
 
 function commandClasses() {
     const directory = path.join(__dirname, '../src/commands/filters');
-    return fs.readdirSync(directory).filter(file => file.endsWith('.js')).map(file => require(path.join(directory, file)));
+    return fs.readdirSync(directory).filter(file => file.endsWith('.js') && file !== 'Filter.js')
+        .map(file => require(path.join(directory, file)));
 }
 
 function clientFor(player) {

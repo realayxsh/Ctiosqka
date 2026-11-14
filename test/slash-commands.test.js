@@ -54,7 +54,7 @@ test('the slash catalog covers enabled public commands, grouping filters and hid
         else if (command.name === 'vote') assert(!names.has('vote'));
         else if (command.folder === 'filters') {
             assert(names.has('filter'));
-            assert(Object.hasOwn(PRESETS, command.name) || command.name === 'clearfilters');
+            assert(Object.hasOwn(PRESETS, command.name) || ['clearfilters', 'filter'].includes(command.name));
         } else assert(names.has(command.name), `Missing /${command.name}`);
     }
     const filter = definitions.find(command => command.name === 'filter');

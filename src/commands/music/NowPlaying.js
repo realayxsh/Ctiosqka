@@ -1,8 +1,26 @@
-const { ContainerBuilder, TextDisplayBuilder, SectionBuilder, ThumbnailBuilder, SeparatorBuilder, MessageFlags, ActionRowBuilder, ButtonBuilder, ButtonStyle } = require("discord.js");
+const { ContainerBuilder, TextDisplayBuilder, SectionBuilder, ThumbnailBuilder, SeparatorBuilder, MessageFlags, ActionRowBuilder, ButtonBuilder, ButtonStyle, StringSelectMenuBuilder, StringSelectMenuOptionBuilder } = require("discord.js");
 const AvonCommand = require("../../structures/avonCommand");
 const { PREMIUM_URL } = require('../../structures/brandingLinks');
 const { getServerBrand } = require("../../structures/serverBrand");
+const { FILTER_OPTIONS } = require('../../audio/filters');
 const ms = require("ms");
+
+function buildFilterRow(client, player) {
+    const activeFilter = player.data.get('activeFilter');
+    const menu = new StringSelectMenuBuilder()
+        .setCustomId('np_filter')
+        .setPlaceholder('Choose an audio filter')
+        .addOptions(...FILTER_OPTIONS.map(({ label, value, desc, key }) => {
+            const option = new StringSelectMenuOptionBuilder()
+                .setLabel(label)
+                .setValue(value)
+                .setDescription(desc)
+                .setDefault(value === (activeFilter || 'none'));
+            if (client.emoji[key]) option.setEmoji(client.emoji[key]);
+            return option;
+        }));
+    return new ActionRowBuilder().addComponents(menu);
+}
 
 function buildPremiumRow(client) {
     return new ActionRowBuilder().addComponents(
@@ -10,7 +28,7 @@ function buildPremiumRow(client) {
     );
 }
 
-function buildContainer(client, track, player, brandIcon) {
+function buildContainer(client, track, player, brandIcon, updateLabel = '-# Updates every 5 seconds') {
     let position = player.position || 0;
     let duration = track.length || 0;
     let size = 15;
@@ -33,7 +51,7 @@ function buildContainer(client, track, player, brandIcon) {
         )
         .addSeparatorComponents(new SeparatorBuilder().setDivider(false))
         .addTextDisplayComponents(
-            new TextDisplayBuilder().setContent(`-# Updates every 5 seconds`)
+            new TextDisplayBuilder().setContent(updateLabel)
         );
 
     return container;
@@ -63,7 +81,8 @@ class NowPlaying extends AvonCommand {
 
             let msg = await message.channel.send({
                 flags: [MessageFlags.IsComponentsV2],
-                components: [buildContainer(client, track, player, brandIcon), buildPremiumRow(client)]
+                components: [buildContainer(client, track, player, brandIcon),
+                    buildFilterRow(client, player), buildPremiumRow(client)]
             });
 
             let updates = 0;
@@ -73,21 +92,36 @@ class NowPlaying extends AvonCommand {
                     let currentPlayer = client.poru.players.get(message.guild.id);
                     let currentTrack = currentPlayer?.queue?.current;
 
-                    if (!currentPlayer || !currentTrack || updates >= 24) {
+                    if (!currentPlayer || !currentTrack) {
                         clearInterval(interval);
                         if (msg.editable) {
                             const doneContainer = new ContainerBuilder()
                                 .addTextDisplayComponents(
-                                    new TextDisplayBuilder().setContent(`${client.emoji.music} No longer updating.`)
+                                    new TextDisplayBuilder().setContent(`${client.emoji.music} No longer playing.`)
                                 );
-                            await msg.edit({ flags: [MessageFlags.IsComponentsV2], components: [doneContainer] }).catch(() => {});
+                            await msg.edit({ flags: [MessageFlags.IsComponentsV2],
+                                components: [doneContainer, buildPremiumRow(client)] }).catch(() => {});
                         }
+                        return;
+                    }
+
+                    if (updates >= 24) {
+                        clearInterval(interval);
+                        await msg.edit({
+                            flags: [MessageFlags.IsComponentsV2],
+                            components: [
+                                buildContainer(client, currentTrack, currentPlayer, brandIcon, '-# Live updates paused'),
+                                buildFilterRow(client, currentPlayer),
+                                buildPremiumRow(client),
+                            ],
+                        }).catch(() => {});
                         return;
                     }
 
                     await msg.edit({
                         flags: [MessageFlags.IsComponentsV2],
-                        components: [buildContainer(client, currentTrack, currentPlayer, brandIcon), buildPremiumRow(client)]
+                        components: [buildContainer(client, currentTrack, currentPlayer, brandIcon),
+                            buildFilterRow(client, currentPlayer), buildPremiumRow(client)]
                     }).catch(() => { clearInterval(interval); });
                 } catch (e) {
                     clearInterval(interval);
