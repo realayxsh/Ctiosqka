@@ -29,7 +29,6 @@ const { isPremium } = require('../../structures/premiumAccess');
 const { isChannelDisabled } = require('../../structures/disabledChannelCache');
 
 const { PRESETS, applyFilter, filterMessage, filterFailure } = require('../../audio/filters');
-const { handlePlaySearchInteraction } = require('../../structures/playSearchSessions');
 
 function buildNowPlayingComponents(client, player) {
     const track = player.queue.current;
@@ -60,7 +59,6 @@ class AvonInteractions extends AvonClientEvents{
     async run(interaction){
 
         if(interaction.isButton()){
-            if (await handlePlaySearchInteraction(this.client, interaction)) return;
             try{
                 let player = this.client.poru.players.get(interaction.guild.id);
                 const control = { pl1: 'stop', pl2: 'pause/resume', pl3: 'loop', pl4: 'previous', pl5: 'skip', pl_lyrics: 'lyrics' }[interaction.customId];
