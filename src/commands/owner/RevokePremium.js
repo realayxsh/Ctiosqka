@@ -1,5 +1,6 @@
 const { ContainerBuilder, TextDisplayBuilder, SectionBuilder, ThumbnailBuilder, MessageFlags } = require("discord.js");
 const AvonCommand = require("../../structures/avonCommand");
+const { restorePremiumBranding, cancelExpiry } = require('../../structures/premiumBranding');
 
 class RevokePremium extends AvonCommand{
     get name(){ return 'revokepremium' }
@@ -29,7 +30,11 @@ class RevokePremium extends AvonCommand{
             if(!isPremium) return send(`${client.emoji.cross} | Server \`${guildId}\` does not have premium active.`);
 
             await client.data3.delete(`premium_${guildId}`);
-            let guildName = client.guilds.cache.get(guildId)?.name || guildId;
+            cancelExpiry(client, guildId);
+            let guild = client.guilds.cache.get(guildId);
+            if (!guild) guild = await client.guilds.fetch(guildId).catch(() => null);
+            if (guild) await restorePremiumBranding(client, guild).catch(() => false);
+            let guildName = guild?.name || guildId;
 
             return send(
                 `**${client.emoji.premium} | Premium Revoked**\n\n${client.emoji.tick} | Premium has been **removed** from **${guildName}**.\n\nServer ID: \`${guildId}\``,

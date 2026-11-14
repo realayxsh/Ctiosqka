@@ -8,3 +8,4 @@
 - [Spotify link loading](spotify-link-loading.md) — empty plugin results may hide API/schema failures; verify native node resolution before blaming a public link.
 - [Warning emoji semantics](emoji-semantics.md) — add warnings selectively for caution/already-active notices; preserve crosses for rejected commands and errors.
 - [MongoDB configuration preference](mongodb-configuration.md) — the user wants MongoDB settings kept in config.json, not moved into Secrets.
+- [Push project changes](git-push-preference.md) — when making requested project changes, push the finished changes to GitHub.

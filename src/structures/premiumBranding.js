@@ -1,0 +1,149 @@
+const fs = require('node:fs/promises');
+const path = require('node:path');
+const { isPremium } = require('./premiumAccess');
+const { invalidateServerBrandCache } = require('./serverBrand');
+
+const PREMIUM_NICKNAME = 'Radio Premium';
+const BRAND_KEY_PREFIX = 'server_brand_';
+const MAX_TIMER_MS = 2_147_000_000;
+const timers = new Map();
+const logoPath = path.join(__dirname, '../assets/radio-premium.jpg');
+
+function brandKey(guildId) {
+    return `${BRAND_KEY_PREFIX}${guildId}`;
+}
+
+async function imageDataFromUrl(url) {
+    const parsed = new URL(url);
+    if (parsed.protocol !== 'https:' ||
+        !['cdn.discordapp.com', 'media.discordapp.net'].includes(parsed.hostname)) {
+        throw new Error('Saved guild avatar URL is not an allowed Discord CDN URL');
+    }
+    const response = await fetch(parsed, { signal: AbortSignal.timeout(10000) });
+    if (!response.ok) throw new Error(`Could not fetch the saved guild avatar (${response.status})`);
+    const type = (response.headers.get('content-type') || '').split(';')[0];
+    if (!['image/png', 'image/jpeg', 'image/gif', 'image/webp'].includes(type)) {
+        throw new Error('Saved guild avatar is not a supported image');
+    }
+    const buffer = Buffer.from(await response.arrayBuffer());
+    if (!buffer.length || buffer.length > 10 * 1024 * 1024) throw new Error('Saved guild avatar size is invalid');
+    return `data:${type};base64,${buffer.toString('base64')}`;
+}
+
+async function setGuildAvatar(client, guildId, avatarData) {
+    return client.rest.patch(`/guilds/${guildId}/members/@me`, { body: { avatar: avatarData } });
+}
+
+async function applyPremiumBranding(client, guild) {
+    const me = guild.members.me || await guild.members.fetchMe();
+    const key = brandKey(guild.id);
+    const data = await client.data4.get(key) || {};
+    if (!data.premiumIdentity) {
+        data.premiumIdentity = {
+            nickname: me.nickname || null,
+            avatarUrl: me.avatar ? me.avatarURL({ extension: 'png', size: 512 }) : null,
+            icon: data.icon || null,
+        };
+        await client.data4.set(key, data);
+    }
+
+    const results = await Promise.allSettled([
+        me.nickname === PREMIUM_NICKNAME ? Promise.resolve() : me.setNickname(PREMIUM_NICKNAME),
+        me.avatar === data.premiumIdentity.appliedAvatarHash
+            ? Promise.resolve()
+            : fs.readFile(logoPath).then(buffer =>
+                setGuildAvatar(client, guild.id, `data:image/jpeg;base64,${buffer.toString('base64')}`)
+            ),
+    ]);
+
+    const failures = results.filter(result => result.status === 'rejected');
+    if (failures.length) {
+        console.warn(`[Premium Branding] Some profile updates failed in a server (code ${Number(failures[0].reason?.code) || 'unknown'}). Check Change Nickname permission and bot profile access.`);
+    }
+
+    try {
+        const updated = await guild.members.fetchMe({ force: true });
+        if (results[1].status === 'fulfilled' && updated.avatar) {
+            data.premiumIdentity.appliedAvatarHash = updated.avatar;
+        }
+        if (updated.avatar) data.icon = updated.avatarURL({ extension: 'png', size: 512 });
+        else if (data.premiumIdentity.icon) data.icon = data.premiumIdentity.icon;
+        else delete data.icon;
+        await client.data4.set(key, data);
+        invalidateServerBrandCache(guild.id);
+    } catch {
+        // The nickname/avatar still apply if the follow-up profile refresh is unavailable.
+    }
+    return { nickname: results[0].status === 'fulfilled', avatar: results[1].status === 'fulfilled' };
+}
+
+async function restorePremiumBranding(client, guild) {
+    if (!guild) return false;
+    const key = brandKey(guild.id);
+    const data = await client.data4.get(key) || {};
+    const identity = data.premiumIdentity;
+    if (!identity) return false;
+    const me = guild.members.me || await guild.members.fetchMe();
+    const results = await Promise.allSettled([
+        me.setNickname(identity.nickname),
+        Promise.resolve().then(async () => setGuildAvatar(
+            client, guild.id, identity.avatarUrl ? await imageDataFromUrl(identity.avatarUrl) : null
+        )),
+    ]);
+    if (results.some(result => result.status === 'rejected')) {
+        console.warn('[Premium Branding] Could not fully restore the previous server profile; will retry on next startup.');
+        return false;
+    }
+
+    if (identity.icon) data.icon = identity.icon;
+    else delete data.icon;
+    delete data.premiumIdentity;
+    if (Object.keys(data).length) await client.data4.set(key, data);
+    else await client.data4.delete(key);
+    invalidateServerBrandCache(guild.id);
+    return true;
+}
+
+function scheduleExpiry(client, guildId, expiresAt) {
+    const key = `${client.cluster?.id ?? 0}:${guildId}`;
+    clearTimeout(timers.get(key));
+    if (!Number.isFinite(expiresAt)) return;
+    const check = async () => {
+        try {
+            if (await isPremium(client, guildId)) {
+                const current = await client.data3.get(`premium_${guildId}`);
+                if (Number.isFinite(current?.expiresAt)) scheduleExpiry(client, guildId, current.expiresAt);
+                return;
+            }
+            const guild = client.guilds.cache.get(guildId);
+            if (guild) await restorePremiumBranding(client, guild);
+        } catch {
+            scheduleExpiry(client, guildId, Date.now() + 60_000);
+        }
+    };
+    const timer = setTimeout(check, Math.max(0, Math.min(expiresAt - Date.now(), MAX_TIMER_MS)));
+    timer.unref?.();
+    timers.set(key, timer);
+}
+
+async function syncPremiumBranding(client, guild) {
+    const data = await client.data3.get(`premium_${guild.id}`);
+    if (await isPremium(client, guild.id)) {
+        await applyPremiumBranding(client, guild);
+        if (Number.isFinite(data?.expiresAt)) scheduleExpiry(client, guild.id, data.expiresAt);
+    } else {
+        const previous = await client.data4.get(brandKey(guild.id));
+        if (previous?.premiumIdentity) await restorePremiumBranding(client, guild);
+    }
+}
+
+function cancelExpiry(client, guildId) {
+    const key = `${client.cluster?.id ?? 0}:${guildId}`;
+    clearTimeout(timers.get(key));
+    timers.delete(key);
+}
+
+module.exports = {
+    PREMIUM_NICKNAME, applyPremiumBranding, restorePremiumBranding,
+    scheduleExpiry, syncPremiumBranding, cancelExpiry,
+};

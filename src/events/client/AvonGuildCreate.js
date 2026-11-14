@@ -1,6 +1,7 @@
 const { EmbedBuilder } = require("discord.js");
 const AvonClientEvent = require(`../../structures/Eventhandler`);
 const wh = require('../../structures/webhook');
+const { syncPremiumBranding } = require('../../structures/premiumBranding');
 
 class AvonGuildCreate extends AvonClientEvent{
     get name(){ return 'guildCreate' }
@@ -11,6 +12,9 @@ class AvonGuildCreate extends AvonClientEvent{
                 this.client.data.set(`${guild.id}-autoPlay`, `disabled`),
                 this.client.data2.set(`noprefix_${guild.id}`, []),
             ]).catch(error => wh.error('Server join defaults failed', error));
+            await syncPremiumBranding(this.client, guild).catch(error => {
+                console.warn(`[Premium Branding] Could not sync a new server profile (code ${Number(error?.code) || 'unknown'}).`);
+            });
             console.log(`[GUILD] Joined: ${guild.name} (${guild.id}) | Members: ${guild.memberCount}`);
 
             let owner = await guild?.fetchOwner().catch(() => null);

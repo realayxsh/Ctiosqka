@@ -3,6 +3,7 @@ const AvonClientEvent = require("../../structures/Eventhandler");
 const wh = require("../../structures/webhook");
 const { registerCommands } = require('../../slash/register');
 const { isPremium } = require('../../structures/premiumAccess');
+const { syncPremiumBranding } = require('../../structures/premiumBranding');
 class AvonReady extends AvonClientEvent{
     get name(){
         return 'clientReady';
@@ -25,6 +26,11 @@ class AvonReady extends AvonClientEvent{
             }
         }
         this.client.guilds.cache.forEach(async x => {
+            try {
+                await syncPremiumBranding(this.client, x);
+            } catch (error) {
+                console.warn(`[Premium Branding] Could not sync a server profile (code ${Number(error?.code) || 'unknown'}).`);
+            }
             let data =  await this.client.data.get(`${x.id}-247`);
             if(!data || data === null)  this.client.data.set(`${x.id}-247`,`disabled`)  ;
             if(data === `disabled`) return;

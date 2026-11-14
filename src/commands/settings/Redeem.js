@@ -1,5 +1,6 @@
 const { ContainerBuilder, TextDisplayBuilder, SectionBuilder, ThumbnailBuilder, MessageFlags } = require("discord.js");
 const AvonCommand = require("../../structures/avonCommand");
+const { applyPremiumBranding, scheduleExpiry } = require('../../structures/premiumBranding');
 
 const DURATION_MS = {
     '30d':  30  * 24 * 60 * 60 * 1000,
@@ -66,12 +67,20 @@ class Redeem extends AvonCommand{
             let remaining = codes.filter(c => (typeof c === 'object' ? c.code : c) !== code);
             await client.data3.set(`premium_codes`, remaining);
             await client.data3.set(`premium_${message.guild.id}`, { active: true, expiresAt, activatedAt: Date.now() });
+            let identity = { nickname: false, avatar: false };
+            try {
+                identity = await applyPremiumBranding(client, message.guild);
+                if (expiresAt !== null) scheduleExpiry(client, message.guild.id, expiresAt);
+            } catch (error) {
+                console.warn(`[Premium Branding] Could not update the server profile (code ${Number(error?.code) || 'unknown'}).`);
+            }
 
             let expText = expiresAt ? `<t:${Math.floor(expiresAt/1000)}:F>` : '**Never (Lifetime)**';
             return send(
                 `**${client.emoji.premium} | Premium Activated!**\n\n` +
                 `${client.emoji.tick} | **${message.guild.name}** now has **Premium** (${label})!\n\n` +
-                `Expires: ${expText}\n\nAll filters and premium features are now unlocked.`,
+                `Expires: ${expText}\n\nAll filters and premium features are now unlocked.` +
+                `${identity.nickname && identity.avatar ? '\n\nYour server bot profile is now **Radio Premium** with the Premium logo.' : '\n\n' + client.emoji.warning + ' | Some profile changes could not be applied. Check the bot’s Change Nickname permission.'}`,
                 message.guild.iconURL({ dynamic: true })
             );
         } catch(e){ console.log(e); }
