@@ -3,6 +3,8 @@ const assert = require('node:assert/strict');
 const SpotifyLinks = require('../src/audio/spotify');
 const { normalizeSpotifyLink, musicLinkSource } = SpotifyLinks;
 const Play = require('../src/commands/music/Play');
+const Interactions = require('../src/events/client/AvonInteractions');
+const { executeSlash } = require('../src/slash/execute');
 const emoji = require('../emoji.json');
 const id = '0123456789AbCdEfGhIjKl';
 const playlist = `https://open.spotify.com/playlist/${id}`;
@@ -194,6 +196,103 @@ test('first text query shows the engine picker before voice connects', async () 
     assert.equal(f.queued.length, 0);
     f.client.poru.players.set('guild', f.player);
     connect(f.player);
+});
+
+test('source buttons acknowledge and search with the selected provider', async () => {
+    for (const [buttonId, engine] of [['def', undefined], ['spoti', 'spotify'], ['deez', 'deezer'], ['sc', 'soundcloud']]) {
+        const f = playFixture();
+        const messageId = `source-${buttonId}`;
+        const track = { title: 'Search result', uri: 'https://example.com/song', length: 120000 };
+        let searchedQuery, searchOptions, deferred = 0;
+        f.player.search = async (query, options) => {
+            searchedQuery = query;
+            searchOptions = options;
+            return { type: 'TRACK', tracks: [track] };
+        };
+        f.message.channel.send = async payload => {
+            f.sent.push(payload);
+            return { id: messageId, edit: async payload => f.edits.push(payload) };
+        };
+
+        await new Play(f.client).run(f.client, f.message, ['Artist - Song Name'], '+');
+        const button = f.edits[0].components[0].toJSON().components
+            .flatMap(component => component.components || [])
+            .find(component => component.custom_id === `play_source_${buttonId}`);
+        assert(button, `Missing source button ${buttonId}`);
+        await new Interactions(f.client).run({
+            isButton: () => true,
+            customId: `play_source_${buttonId}`,
+            user: f.message.author,
+            message: { id: messageId },
+            deferUpdate: async () => { deferred++; },
+        });
+        assert.equal(deferred, 1);
+        assert.equal(searchedQuery, 'Artist - Song Name');
+        assert.equal(searchOptions.engine, engine);
+        assert.deepEqual(f.queued, [track]);
+    }
+});
+
+test('/play preserves the submitted song query through the source-button click', async () => {
+    const f = playFixture();
+    const query = 'Artist - Song Name';
+    const guildId = 'slash-play-guild';
+    const channelId = 'slash-play-channel';
+    const messageId = 'slash-play-response';
+    const member = {
+        voice: { channelId: 'voice' },
+        permissions: { has: () => true },
+    };
+    let searchedQuery;
+    f.player.search = async value => {
+        searchedQuery = value;
+        return { type: 'TRACK', tracks: [{ title: 'Slash result', uri: 'https://example.com/song', length: 120000 }] };
+    };
+    f.client.config = { owners: [], coowners: [], prefix: '+', voting: { enabled: false }, server: 'https://example.com' };
+    f.client.user = { id: 'bot', displayAvatarURL: () => 'https://example.com/bot.png' };
+    f.client.data = { get: async () => null };
+    f.client.AvonCommands = { commands: new Map([['play', new Play(f.client)]]) };
+    f.client.poru.players = new Map([[guildId, f.player]]);
+    const interaction = {
+        id: 'slash-play-interaction',
+        commandName: 'play',
+        channelId,
+        channel: { id: channelId },
+        user: f.message.author,
+        member,
+        guild: {
+            id: guildId,
+            members: { me: { voice: { channelId: 'voice' } } },
+        },
+        options: {
+            getString: name => name === 'query' ? query : null,
+            get: name => name === 'query' ? { value: query } : null,
+            getUser: () => null,
+            getMember: () => null,
+            getChannel: () => null,
+        },
+        deferReply: async () => {},
+        editReply: async payload => {
+            f.sent.push(payload);
+            return { id: messageId, edit: async edit => f.edits.push(edit) };
+        },
+        reply: async () => {},
+    };
+    await executeSlash(f.client, interaction, {
+        hasVoted: async () => true,
+        isPremium: async () => true,
+    });
+
+    assert.match(contents(f.sent[0]), /Artist - Song Name/);
+    await new Interactions(f.client).run({
+        isButton: () => true,
+        customId: 'play_source_def',
+        user: f.message.author,
+        message: { id: messageId },
+        deferUpdate: async () => {},
+    });
+    assert.equal(searchedQuery, query);
+    assert.deepEqual(f.queued, [{ title: 'Slash result', uri: 'https://example.com/song', length: 120000 }]);
 });
 
 test('provider failures always replace Searching and identify the correct source', async () => {

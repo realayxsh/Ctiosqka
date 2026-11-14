@@ -77,6 +77,10 @@ test('argument mapping preserves zero, optional checks, and customize subcommand
     ]) {
         assert.deepEqual(slashArguments(fixture(name, values).interaction, name), expected);
     }
+    const playInteraction = fixture('play', { query: 'search this exact song' }).interaction;
+    playInteraction.options.get = () => null;
+    assert.deepEqual(slashArguments(playInteraction, 'play'), ['search this exact song']);
+    assert.deepEqual(slashArguments(fixture('play').interaction, 'play'), []);
     assert.deepEqual(slashArguments(fixture('customize', { url: 'https://example.com/a.png' }, { subcommand: 'icon' }).interaction, 'customize'),
         ['icon', 'https://example.com/a.png']);
     assert.deepEqual(slashArguments(fixture('customize', {}, { subcommand: 'reset' }).interaction, 'customize'), ['reset', 'all']);

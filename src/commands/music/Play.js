@@ -3,6 +3,7 @@ const ms = require("ms");
 const AvonCommand = require(`../../structures/avonCommand`);
 const { musicLinkSource } = require('../../audio/spotify');
 const wh = require('../../structures/webhook');
+const { registerPlaySearchSession } = require('../../structures/playSearchSessions');
 
 class Play extends AvonCommand {
     get name() { return 'play' }
@@ -13,6 +14,7 @@ class Play extends AvonCommand {
 
     async run(client, message, args, prefix) {
         const avatar = message.author.displayAvatarURL({ dynamic: true });
+        let cleanupSearchSession;
 
         const send = (text) => {
             const container = new ContainerBuilder()
@@ -35,11 +37,14 @@ class Play extends AvonCommand {
         };
 
         try {
-            if (!args[0]) {
+            const queryArgs = Array.isArray(args)
+                ? args.filter(value => typeof value === 'string' && value.trim())
+                : [];
+            if (!queryArgs.length) {
                 return send(`**${client.emoji.info} | Command Usage**\n\`\`\`js\n${prefix}play <songurl>\`\`\``);
             }
 
-            const query = args.join(" ").trim().replace(/^<(.+)>$/, '$1');
+            const query = queryArgs.join(" ").trim().replace(/^<(.+)>$/, '$1');
 
             const searchingContainer = new ContainerBuilder()
                 .addSectionComponents(
@@ -62,9 +67,12 @@ class Play extends AvonCommand {
                 })).then(player => ({ player }), error => ({ error }));
             const searchWithPlayer = async options => {
                 // Kazagumo can search without an established Discord voice session.
-                const [ready, result] = await Promise.all([
+                const search = () => existingPlayer
+                    ? existingPlayer.search(query, options)
+                    : client.poru.search(query, options);
+                const [ready, firstResult] = await Promise.all([
                     playerReady,
-                    existingPlayer ? existingPlayer.search(query, options) : client.poru.search(query, options)
+                    search()
                 ]);
                 if (ready.error) throw ready.error;
                 const player = ready.player;
@@ -72,6 +80,14 @@ class Play extends AvonCommand {
                     throw new Error('Player changed during search');
                 }
                 player.setTextChannel(message.channel.id);
+                let result = firstResult;
+                if (!result?.tracks?.length) {
+                    await new Promise(resolve => setTimeout(resolve, 400));
+                    result = await search();
+                    if (client.poru.players.get(message.guild.id) !== player) {
+                        throw new Error('Player changed during search');
+                    }
+                }
                 return { player, result };
             };
 
@@ -113,23 +129,14 @@ class Play extends AvonCommand {
                 .addSeparatorComponents(new SeparatorBuilder().setDivider(false))
                 .addActionRowComponents(
                     new ActionRowBuilder().addComponents(
-                        new ButtonBuilder().setStyle(ButtonStyle.Secondary).setLabel(`Default`).setCustomId(`def`),
-                        new ButtonBuilder().setStyle(ButtonStyle.Success).setEmoji(`<:spotify_avon:1065634374906814525>`).setCustomId(`spoti`),
-                        new ButtonBuilder().setStyle(ButtonStyle.Danger).setCustomId(`deez`).setEmoji(`<:Deezer_avon:1065634451603861545>`),
-                        new ButtonBuilder().setStyle(ButtonStyle.Primary).setCustomId(`sc`).setEmoji(`<:Soundcloud_avon:1065634569262473277>`)
+                        new ButtonBuilder().setStyle(ButtonStyle.Secondary).setLabel(`Default`).setCustomId(`play_source_def`),
+                        new ButtonBuilder().setStyle(ButtonStyle.Success).setEmoji(`<:spotify_avon:1065634374906814525>`).setCustomId(`play_source_spoti`),
+                        new ButtonBuilder().setStyle(ButtonStyle.Danger).setCustomId(`play_source_deez`).setEmoji(`<:Deezer_avon:1065634451603861545>`),
+                        new ButtonBuilder().setStyle(ButtonStyle.Primary).setCustomId(`play_source_sc`).setEmoji(`<:Soundcloud_avon:1065634569262473277>`)
                     )
                 );
 
-            await searchingMsg.edit({ flags: [MessageFlags.IsComponentsV2], components: [selectorContainer] });
-            const collector = searchingMsg.createMessageComponentCollector({
-                filter: interaction => interaction.user.id === message.author.id,
-                time: 120000,
-                max: 1
-            });
-
-            collector.on('collect', async interaction => {
-                await interaction.deferUpdate();
-
+            cleanupSearchSession = registerPlaySearchSession(client, searchingMsg.id, message.author.id, async sourceId => {
                 try {
                     const engines = {
                         def: { label: 'Default' },
@@ -137,7 +144,7 @@ class Play extends AvonCommand {
                         deez: { engine: 'deezer', label: 'Deezer' },
                         sc: { engine: 'soundcloud', label: 'SoundCloud' }
                     };
-                    const selectedEngine = engines[interaction.customId];
+                    const selectedEngine = engines[sourceId];
                     if (!selectedEngine) {
                         return editMsg(searchingMsg, `**${client.emoji.cross} | Unknown search engine. Please run the command again.**`);
                     }
@@ -164,15 +171,12 @@ class Play extends AvonCommand {
                     console.error('[Play Search]', error);
                     return editMsg(searchingMsg, `**${client.emoji.cross} | Search failed for that engine. Please try another engine or query.**`).catch(() => {});
                 }
-            });
+            }, () => editMsg(searchingMsg, `**${client.emoji.warning} | Search selection timed out. Run the command again.**`).catch(() => {}));
 
-            collector.on('end', (collected, reason) => {
-                if (collected.size === 0 && reason === 'time') {
-                    editMsg(searchingMsg, `**${client.emoji.warning} | Search selection timed out. Run the command again.**`).catch(() => {});
-                }
-            });
-
+            // Register source handling before exposing the buttons.
+            await searchingMsg.edit({ flags: [MessageFlags.IsComponentsV2], components: [selectorContainer] });
         } catch (e) {
+            cleanupSearchSession?.();
             console.error('[Play]', e);
             message.channel.send({ content: `${client.emoji.cross} | Something went wrong. Please try again.` }).catch(() => {});
         }

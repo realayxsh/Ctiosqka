@@ -109,6 +109,10 @@ function createDefinitions(client) {
 
 function slashArguments(interaction, commandName) {
     const options = interaction.options;
+    if (commandName === 'play') {
+        const query = options.getString?.('query') ?? options.get?.('query')?.value;
+        return typeof query === 'string' && query.trim() ? [query] : [];
+    }
     if (commandName === 'customize') {
         const sub = options.getSubcommand();
         const value = sub === 'reset' ? options.getString('target') || 'all' :
