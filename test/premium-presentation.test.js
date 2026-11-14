@@ -33,9 +33,19 @@ function fixture() {
 }
 const serialize = payload => JSON.stringify(payload.components.map(component => component.toJSON()));
 
-test('automatic track cards retain every control, the filter dropdown, and Premium, with Lyrics in the first row', async () => {
+test('automatic track cards retain every control, the filter dropdown, and Premium, with Lyrics in the first row', async t => {
     const f = fixture();
+    let announce;
+    t.mock.method(global, 'setTimeout', (callback, delay) => {
+        assert.equal(delay, 3500);
+        announce = callback;
+        return { pending: true };
+    });
+    t.mock.method(global, 'clearTimeout', () => {});
     await new TrackStart(f.client).run(f.player, f.track);
+    assert.equal(f.sent.length, 0);
+    await announce();
+    assert.equal(f.sent.length, 1);
     const card = serialize(f.sent[0]);
     assert.match(card, /Now Playing/);
     assert(card.includes(`${emoji.music} **[Test song]`));
