@@ -6,6 +6,7 @@ const config = require(`../../config.json`);
 const wh = require('./webhook');
 const { isVotingEnabled } = require('./voting');
 const { isOwner, runOwnerMessage } = require('./ownerMessages');
+const { WEBSITE_URL } = require('./brandingLinks');
 const table = new ascii().setHeading('Avon Commands', 'Status');
 const top = require(`@top-gg/sdk`);
 const voteApi = new top.Api(process.env.topggapi || config.topggapi);
@@ -92,7 +93,7 @@ class AvonCommands extends EventEmitter {
             let b1 = new ButtonBuilder().setStyle(ButtonStyle.Link).setLabel(`Invite`).setURL(`https://discord.com/oauth2/authorize?client_id=1570724994919563304&permissions=281749858110545&integration_type=0&scope=bot`);
             let b2 = new ButtonBuilder().setStyle(ButtonStyle.Link).setLabel(`Support`).setURL(this.client.config.server);
             let b3 = new ButtonBuilder().setStyle(ButtonStyle.Link).setLabel(`Vote`).setURL(`https://top.gg/bot/1097475016880304180/vote`);
-            let b4 = new ButtonBuilder().setStyle(ButtonStyle.Link).setLabel(`Web`).setURL(`https://shorturl.at/egszS`);
+            let b4 = new ButtonBuilder().setStyle(ButtonStyle.Link).setLabel(`Web`).setURL(WEBSITE_URL);
             let ro = new ActionRowBuilder().addComponents(...(isVotingEnabled(this.client) ? [b1, b2, b3, b4] : [b1, b2, b4]));
             const container = new ContainerBuilder()
                 .addSectionComponents(

@@ -1,5 +1,6 @@
 const { ContainerBuilder, TextDisplayBuilder, SectionBuilder, ThumbnailBuilder, SeparatorBuilder, ButtonBuilder, ButtonStyle, ActionRowBuilder, StringSelectMenuBuilder, MessageFlags } = require("discord.js");
 const AvonCommand = require("../../structures/avonCommand");
+const { PREMIUM_URL } = require('../../structures/brandingLinks');
 const { isVotingEnabled } = require('../../structures/voting');
 
 class Help extends AvonCommand{
@@ -158,7 +159,7 @@ class Help extends AvonCommand{
                     `${client.emoji.premium} **Make Radio your server's own with Premium.**\n\n` +
                     `**Your server, your look**\nCustomize Radio's icon and banner with \`customize\`.\n\n` +
                     `**More ways to personalize your music**\nAccess premium audio presets without cluttering your playback controls.\n\n` +
-                    `**Get Premium**\nContact the bot owner through [our support server](${client.config.server}) for a premium code.\n` +
+                    `**Get Premium**\nVisit [radiomusic.in/premium](${PREMIUM_URL}) for Premium.\n` +
                     `Activate it with \`redeem <code>\`.\n\n` +
                     `**Already have Premium?**\nCheck your server's status with \`premium\`.`
                 ))

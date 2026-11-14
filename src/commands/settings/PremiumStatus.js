@@ -1,5 +1,6 @@
 const { ContainerBuilder, TextDisplayBuilder, SectionBuilder, ThumbnailBuilder, SeparatorBuilder, ActionRowBuilder, ButtonBuilder, ButtonStyle, MessageFlags } = require("discord.js");
 const AvonCommand = require("../../structures/avonCommand");
+const { PREMIUM_URL } = require('../../structures/brandingLinks');
 
 class PremiumStatus extends AvonCommand{
     get name(){ return 'premium'; }
@@ -53,7 +54,7 @@ class PremiumStatus extends AvonCommand{
                             .setThumbnailAccessory(new ThumbnailBuilder().setURL(message.guild.iconURL({ dynamic: true }) || client.user.displayAvatarURL()))
                     );
                 const row = new ActionRowBuilder().addComponents(
-                    new ButtonBuilder().setStyle(ButtonStyle.Link).setLabel(`Get Premium`).setURL(client.config.server),
+                    new ButtonBuilder().setStyle(ButtonStyle.Link).setLabel(`Get Premium`).setURL(PREMIUM_URL),
                     new ButtonBuilder().setStyle(ButtonStyle.Success).setCustomId(`redeem_prompt`).setLabel(`Redeem Code`)
                 );
 

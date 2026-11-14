@@ -1,11 +1,12 @@
 const { ContainerBuilder, TextDisplayBuilder, SectionBuilder, ThumbnailBuilder, SeparatorBuilder, MessageFlags, ActionRowBuilder, ButtonBuilder, ButtonStyle } = require("discord.js");
 const AvonCommand = require("../../structures/avonCommand");
+const { PREMIUM_URL } = require('../../structures/brandingLinks');
 const { getServerBrand } = require("../../structures/serverBrand");
 const ms = require("ms");
 
 function buildPremiumRow(client) {
     return new ActionRowBuilder().addComponents(
-        new ButtonBuilder().setStyle(ButtonStyle.Link).setLabel('Get Premium').setURL(client.config.server)
+        new ButtonBuilder().setStyle(ButtonStyle.Link).setLabel('Get Premium').setURL(PREMIUM_URL)
     );
 }
 
