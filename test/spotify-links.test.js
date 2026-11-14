@@ -4,6 +4,7 @@ const SpotifyLinks = require('../src/audio/spotify');
 const { normalizeSpotifyLink, musicLinkSource } = SpotifyLinks;
 const Play = require('../src/commands/music/Play');
 const emoji = require('../emoji.json');
+const Interactions = require('../src/events/client/AvonInteractions');
 const id = '0123456789AbCdEfGhIjKl';
 const playlist = `https://open.spotify.com/playlist/${id}`;
 
@@ -181,16 +182,16 @@ test('first text query shows the engine picker before voice connects', async () 
     f.client.poru.players.clear();
     let connect;
     f.client.poru.createPlayer = () => new Promise(resolve => { connect = resolve; });
-    const collector = { on: () => collector };
     f.message.channel.send = async payload => {
         f.sent.push(payload);
         return {
+            id: 'search-message',
             edit: async payload => f.edits.push(payload),
-            createMessageComponentCollector: () => collector,
         };
     };
     await new Play(f.client).run(f.client, f.message, ['my song'], '+');
     assert.match(contents(f.edits[0]), /Choose the search engine/);
+    assert(f.client.playSearchSessions.has('search-message'));
     assert.equal(f.queued.length, 0);
     f.client.poru.players.set('guild', f.player);
     connect(f.player);
@@ -209,7 +210,8 @@ test('source buttons are listening before display and call their matching provid
         const events = [];
         const track = { title: 'Source test', uri: 'https://example.com/song', length: 180000 };
         let searchOptions;
-        let collect;
+        const messageId = `search-${customId}`;
+        let acknowledgeCount = 0;
         f.player.search = async (_query, options) => {
             searchOptions = options;
             return { type: 'TRACK', tracks: [track] };
@@ -217,33 +219,38 @@ test('source buttons are listening before display and call their matching provid
         f.message.channel.send = async payload => {
             f.sent.push(payload);
             return {
+                id: messageId,
                 edit: async payload => {
+                    events.push(f.client.playSearchSessions?.has(messageId) ? 'registered' : 'missing');
                     events.push('display');
                     f.edits.push(payload);
                 },
-                createMessageComponentCollector: () => ({
-                    on: (event, callback) => {
-                        if (event === 'collect') {
-                            events.push('listen');
-                            collect = callback;
-                        }
-                    },
-                }),
             };
         };
 
         await new Play(f.client).run(f.client, f.message, ['source test song'], '+');
-        assert.deepEqual(events, ['listen', 'display']);
+        assert.deepEqual(events, ['registered', 'display']);
         const interaction = f.edits[0].components[0].toJSON().components
             .flatMap(component => component.components || [])
-            .find(button => button.custom_id === customId);
+            .find(button => button.custom_id === `play_source_${customId}`);
         assert(interaction, `Missing source button ${customId}`);
-        await collect({
-            customId,
+        const componentInteraction = {
+            customId: `play_source_${customId}`,
             user: f.message.author,
+            message: { id: messageId },
             deferUpdate: async () => {},
+        };
+        const originalDefer = componentInteraction.deferUpdate;
+        componentInteraction.deferUpdate = async () => {
+            acknowledgeCount++;
+            await originalDefer();
+        };
+        await new Interactions(f.client).run({
+            ...componentInteraction,
+            isButton: () => true,
         });
 
+        assert.equal(acknowledgeCount, 1);
         assert.equal(searchOptions.engine, expectedEngine);
         assert.deepEqual(f.queued, [track]);
         assert.match(contents(f.edits.at(-1)), /Added Song to Queue/);
@@ -253,8 +260,8 @@ test('source buttons are listening before display and call their matching provid
 test('text search retries once when the provider briefly returns no tracks', async () => {
     const f = playFixture();
     const track = { title: 'Found after retry', uri: 'https://example.com/song', length: 180000 };
+    const messageId = 'retry-search';
     let searchCalls = 0;
-    let collect;
     f.player.search = async () => {
         searchCalls++;
         return searchCalls === 1 ? { tracks: [] } : { type: 'TRACK', tracks: [track] };
@@ -262,19 +269,17 @@ test('text search retries once when the provider briefly returns no tracks', asy
     f.message.channel.send = async payload => {
         f.sent.push(payload);
         return {
+            id: messageId,
             edit: async payload => f.edits.push(payload),
-            createMessageComponentCollector: () => ({
-                on: (event, callback) => {
-                    if (event === 'collect') collect = callback;
-                },
-            }),
         };
     };
 
     await new Play(f.client).run(f.client, f.message, ['intermittent song'], '+');
-    await collect({
-        customId: 'def',
+    await new Interactions(f.client).run({
+        customId: 'play_source_def',
+        isButton: () => true,
         user: f.message.author,
+        message: { id: messageId },
         deferUpdate: async () => {},
     });
 

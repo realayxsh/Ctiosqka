@@ -3,6 +3,7 @@ const ms = require("ms");
 const AvonCommand = require(`../../structures/avonCommand`);
 const { musicLinkSource } = require('../../audio/spotify');
 const wh = require('../../structures/webhook');
+const { registerPlaySearchSession } = require('../../structures/playSearchSessions');
 
 class Play extends AvonCommand {
     get name() { return 'play' }
@@ -13,6 +14,7 @@ class Play extends AvonCommand {
 
     async run(client, message, args, prefix) {
         const avatar = message.author.displayAvatarURL({ dynamic: true });
+        let cleanupSearchSession;
 
         const send = (text) => {
             const container = new ContainerBuilder()
@@ -125,29 +127,22 @@ class Play extends AvonCommand {
                 .addSeparatorComponents(new SeparatorBuilder().setDivider(false))
                 .addActionRowComponents(
                     new ActionRowBuilder().addComponents(
-                        new ButtonBuilder().setStyle(ButtonStyle.Secondary).setLabel(`Default`).setCustomId(`def`),
-                        new ButtonBuilder().setStyle(ButtonStyle.Success).setEmoji(`<:spotify_avon:1065634374906814525>`).setCustomId(`spoti`),
-                        new ButtonBuilder().setStyle(ButtonStyle.Danger).setCustomId(`deez`).setEmoji(`<:Deezer_avon:1065634451603861545>`),
-                        new ButtonBuilder().setStyle(ButtonStyle.Primary).setCustomId(`sc`).setEmoji(`<:Soundcloud_avon:1065634569262473277>`)
+                        new ButtonBuilder().setStyle(ButtonStyle.Secondary).setLabel(`Default`).setCustomId(`play_source_def`),
+                        new ButtonBuilder().setStyle(ButtonStyle.Success).setEmoji(`<:spotify_avon:1065634374906814525>`).setCustomId(`play_source_spoti`),
+                        new ButtonBuilder().setStyle(ButtonStyle.Danger).setCustomId(`play_source_deez`).setEmoji(`<:Deezer_avon:1065634451603861545>`),
+                        new ButtonBuilder().setStyle(ButtonStyle.Primary).setCustomId(`play_source_sc`).setEmoji(`<:Soundcloud_avon:1065634569262473277>`)
                     )
                 );
 
-            const collector = searchingMsg.createMessageComponentCollector({
-                filter: interaction => interaction.user.id === message.author.id,
-                time: 120000,
-                max: 1
-            });
-
-            collector.on('collect', async interaction => {
+            cleanupSearchSession = registerPlaySearchSession(client, searchingMsg.id, message.author.id, async sourceId => {
                 try {
-                    await interaction.deferUpdate();
                     const engines = {
                         def: { label: 'Default' },
                         spoti: { engine: 'spotify', label: 'Spotify' },
                         deez: { engine: 'deezer', label: 'Deezer' },
                         sc: { engine: 'soundcloud', label: 'SoundCloud' }
                     };
-                    const selectedEngine = engines[interaction.customId];
+                    const selectedEngine = engines[sourceId];
                     if (!selectedEngine) {
                         return editMsg(searchingMsg, `**${client.emoji.cross} | Unknown search engine. Please run the command again.**`);
                     }
@@ -174,18 +169,13 @@ class Play extends AvonCommand {
                     console.error('[Play Search]', error);
                     return editMsg(searchingMsg, `**${client.emoji.cross} | Search failed for that engine. Please try another engine or query.**`).catch(() => {});
                 }
-            });
-
-            collector.on('end', (collected, reason) => {
-                if (collected.size === 0 && reason === 'time') {
-                    editMsg(searchingMsg, `**${client.emoji.warning} | Search selection timed out. Run the command again.**`).catch(() => {});
-                }
-            });
+            }, () => editMsg(searchingMsg, `**${client.emoji.warning} | Search selection timed out. Run the command again.**`).catch(() => {}));
 
             // Register the click handler before exposing the buttons to avoid an unacknowledged early click.
             await searchingMsg.edit({ flags: [MessageFlags.IsComponentsV2], components: [selectorContainer] });
 
         } catch (e) {
+            cleanupSearchSession?.();
             console.error('[Play]', e);
             message.channel.send({ content: `${client.emoji.cross} | Something went wrong. Please try again.` }).catch(() => {});
         }
