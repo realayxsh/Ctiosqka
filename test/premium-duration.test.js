@@ -16,17 +16,16 @@ test('duration shorthand maps to the expected length and labels', () => {
     assert.equal(parsePremiumDuration('6y'), null);
 });
 
-test('amount is optional and remains separate from duration shorthand', () => {
-    assert.deepEqual(parseGenerationArgs(['2m']), {
-        amount: 1, duration: { key: '60d', milliseconds: 60 * 24 * 60 * 60 * 1000, label: '2 Months' },
-    });
+test('generation requires the number first and the duration second', () => {
     assert.equal(parseGenerationArgs(['5', '2m']).amount, 5);
-    assert.equal(parseGenerationArgs(['1y', '3']).amount, 3);
+    assert.equal(parseGenerationArgs(['3', '1y']).duration.key, '365d');
     assert.equal(parseGenerationArgs(['11', '1m']).error, 'Amount must be between 1 and 10.');
-    assert.ok(parseGenerationArgs(['25m']).error);
+    assert.match(parseGenerationArgs(['2m', '5']).error, /first argument/);
+    assert.match(parseGenerationArgs(['5']).error, /both/);
+    assert.match(parseGenerationArgs(['5', '25m']).error, /Choose a duration/);
 });
 
-test('genprem stores one two-month code when called with only 2m', async () => {
+test('genprem stores the requested count and duration from positional arguments', async () => {
     const store = new Map([['premium_codes', []]]);
     const client = {
         config: { owners: ['owner'], coowners: [] },
@@ -40,8 +39,8 @@ test('genprem stores one two-month code when called with only 2m', async () => {
         author: { id: 'owner', displayAvatarURL: () => 'https://example.com/avatar.png' },
         channel: { send: async payload => payload },
     };
-    await new GenPremium(client).run(client, message, ['2m'], '+');
+    await new GenPremium(client).run(client, message, ['3', '2m'], '+');
     const codes = store.get('premium_codes');
-    assert.equal(codes.length, 1);
-    assert.equal(codes[0].duration, '60d');
+    assert.equal(codes.length, 3);
+    assert.ok(codes.every(code => code.duration === '60d'));
 });

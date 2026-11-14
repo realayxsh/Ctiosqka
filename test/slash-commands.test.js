@@ -266,11 +266,11 @@ test('owners can use bare DMs and mentions without no-prefix database grants', a
         name: 'genpremium', aliases: ['genprem'], ownerOnly: true,
         run: async (bot, message, args, prefix) => invocations.push({ content: message.content, args, prefix, guild: message.guild }),
     });
-    for (const content of ['genpremium 30d 2', '<@bot> genpremium 30d 2', 'genprem 30d 2']) {
+    for (const content of ['genpremium 2 30d', '<@bot> genpremium 2 30d', 'genprem 2 30d']) {
         assert(await runOwnerMessage(client, { content, author: { id: 'caller' }, guild: null }));
     }
-    assert(invocations.every(call => call.prefix === '' && call.args.join(' ') === '30d 2'));
-    assert.equal(invocations.at(-1).content, 'genprem 30d 2');
+    assert(invocations.every(call => call.prefix === '' && call.args.join(' ') === '2 30d'));
+    assert.equal(invocations.at(-1).content, 'genprem 2 30d');
     assert.equal(await runOwnerMessage(client, { content: 'genpremium 30d', author: { id: 'stranger' } }), false);
 });
 
@@ -281,7 +281,7 @@ test('the real genpremium command can generate codes in an owner DM without guil
     command.ownerOnly = true;
     client.AvonCommands.commands.set('genpremium', command);
     const responses = [];
-    const message = { content: 'genpremium 30d 2', guild: null,
+    const message = { content: 'genpremium 2 30d', guild: null,
         author: { id: 'caller', displayAvatarURL: () => 'https://example.com/user.png' },
         channel: { send: async response => responses.push(response) } };
     assert(await runOwnerMessage(client, message));

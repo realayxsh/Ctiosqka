@@ -37,29 +37,13 @@ function parsePremiumDuration(input) {
 }
 
 function parseGenerationArgs(args = []) {
-    let amount = 1;
-    let duration = parsePremiumDuration('30d');
-    let amountProvided = false;
-    let durationProvided = false;
-
-    for (const argument of args) {
-        const parsedDuration = parsePremiumDuration(argument);
-        if (parsedDuration && !durationProvided) {
-            duration = parsedDuration;
-            durationProvided = true;
-        } else if (/^\d+$/.test(argument) && !amountProvided) {
-            amount = Number(argument);
-            amountProvided = true;
-        } else {
-            return { error: `Invalid or repeated argument: ${argument}` };
-        }
-    }
-
+    if (args.length !== 2) return { error: 'Provide both the number of codes and the duration.' };
+    const [amountText, durationText] = args;
+    if (!/^\d+$/.test(amountText)) return { error: 'The first argument must be the number of codes to generate.' };
+    const amount = Number(amountText);
     if (amount < 1 || amount > 10) return { error: 'Amount must be between 1 and 10.' };
-    if (args.some(argument => /^\d+(?:m|y|year|years)$/.test(argument.toLowerCase()) &&
-        !parsePremiumDuration(argument))) {
-        return { error: 'Use 1–24 months, 1–5 years, or lifetime.' };
-    }
+    const duration = parsePremiumDuration(durationText);
+    if (!duration) return { error: 'Choose a duration from 1m–24m, 1y–5y, or lifetime.' };
     return { amount, duration };
 }
 

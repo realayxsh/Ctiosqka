@@ -16,8 +16,8 @@ class GenPremium extends AvonCommand{
                 const container = new ContainerBuilder()
                     .addTextDisplayComponents(new TextDisplayBuilder().setContent(
                         `${client.emoji.cross} | ${parsed.error}\n\n` +
-                        `Usage: \`${prefix}genprem [amount] <duration>\`\n` +
-                        `Examples: \`${prefix}genprem 1m\`, \`${prefix}genprem 2m\`, \`${prefix}genprem 1y\`, \`${prefix}genprem lifetime\`, \`${prefix}genprem 5 2m\``
+                        `Usage: \`${prefix}genprem <number> <time>\`\n` +
+                        `Examples: \`${prefix}genprem 1 1m\`, \`${prefix}genprem 1 2m\`, \`${prefix}genprem 2 1y\`, \`${prefix}genprem 1 lifetime\``
                     ));
                 return message.channel.send({ flags: [MessageFlags.IsComponentsV2], components: [container] });
             }
